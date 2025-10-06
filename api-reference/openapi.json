@@ -16,13 +16,10 @@
   "security": [
     {
       "ApiKeyAuth": []
-    },
-    {
-      "bearerAuth": []
     }
   ],
   "paths": {
-    "/me": {
+    "/users": {
       "get": {
         "description": "Get profile information",
         "responses": {
@@ -65,15 +62,17 @@
             }
           }
         }
-      },
+      }
+    },
+    "/trigger/enrich": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "description": "Create and launch enrichment for contacts",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Enrichment details",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/EnrichmentRequest"
               }
             }
           },
@@ -81,11 +80,11 @@
         },
         "responses": {
           "200": {
-            "description": "Plant successfully created",
+            "description": "Enrichment successfully created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/Enrichment"
                 }
               }
             }
@@ -114,75 +113,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted successfully"
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Invalid or missing authentication credentials",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthError"
-                },
-                "example": {
-                  "message": "Invalid API Key",
-                  "error": "Unauthorized",
-                  "statusCode": 401
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
           }
         }
       }
@@ -217,44 +147,130 @@
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Plant": {
+      "EnrichmentRequest": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
-          "name",
-          "species"
+          "webhook_url",
+          "contacts",
+          "enrichment_type"
         ],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the plant"
+          "enrichment_type": {
+            "type": "array",
+            "description": "Types of enrichment to perform.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "email",
+                "profile"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
           },
-          "species": {
-            "type": "string",
-            "description": "Species of the plant"
+          "custom": {
+            "$ref": "#/components/schemas/EnrichmentCustomOptions"
           },
-          "price": {
-            "type": "number",
-            "description": "Price of the plant"
+          "contacts": {
+            "type": "array",
+            "description": "Contacts to enrich.",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            },
+            "minItems": 1
+          },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Webhook endpoint to receive enrichment results."
+          }
+        },
+        "example": {
+          "enrichment_type": [
+            "email",
+            "profile"
+          ],
+          "custom": {
+            "provider": "clay",
+            "enrichment_type": "full_profile"
+          },
+          "contacts": [
+            {
+              "firstname": "John",
+              "lastname": "Doe",
+              "email": "john@acme.com",
+              "job_title": "ceo",
+              "domain": "acme.com",
+              "company_name": "Acmeo",
+              "linkedin_url": "https://www.linkedin.com/in/john-doe/",
+              "custom": {
+                "contact_id": "44479301"
+              }
+            }
+          ],
+          "webhook_url": "https://api.example.com/webhooks/enrichment"
+        }
+      },
+      "EnrichmentCustomOptions": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Downstream data provider to use (e.g., clay)."
+          },
+          "enrichment_type": {
+            "type": "string",
+            "description": "Provider-specific enrichment mode.",
+            "example": "full_profile"
+          }
+        }
+      },
+      "Contact": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "firstname",
+          "lastname"
+        ],
+        "properties": {
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "job_title": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Company domain (e.g., acme.com)."
+          },
+          "company_name": {
+            "type": "string"
+          },
+          "linkedin_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "custom": {
+            "$ref": "#/components/schemas/ContactCustom"
+          }
+        }
+      },
+      "ContactCustom": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "description": "Optional CRM record id specific to this contact."
           }
         }
       },
@@ -303,11 +319,6 @@
         "in": "header",
         "name": "x-api-key",
         "description": "Provide your API key in the x-api-key header."
-      },
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
       }
     }
   }

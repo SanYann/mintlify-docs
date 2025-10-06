@@ -1,117 +1,85 @@
 ---
 title: "Quickstart"
-description: "Kickstart your LoneScale documentation and API Playground in minutes"
+description: "Start using LoneScale Api"
 ---
 
 ## Get started in three steps
 
-Spin up your LoneScale docs locally, connect deployments, and ship your first change.
+Start enrich contacts in a minute
 
-### Step 1: Set up locally
+### Step 1: Api Overview
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs">
-    Your documentation lives in a GitHub repository. You can find or change the connected repository from your LoneScale Docs dashboard.
-
-    1. Open your docs repo from your dashboard.
-    2. Follow GitHub’s guide to clone it locally: <a href="https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository" target="_blank" rel="noopener noreferrer">Cloning a repository</a>.
-
+  <Accordion icon="copy" title="Clone your docs locally">
+    During the onboarding process, you created a GitHub repository with your
+    docs content if you didn't already have one. You can find a link to this
+    repository in your [dashboard](https://dashboard.mintlify.com). To clone the
+    repository locally so that you can make and preview changes to your docs,
+    follow the [Cloning a
+    repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+    guide in the GitHub docs.
   </Accordion>
-
-  <Accordion icon="rectangle-terminal" title="Preview your docs">
-    1. Install the Mintlify CLI: `npm i -g mint`  
-    2. From the repo root, run: `mint dev`  
-    3. Open `http://localhost:3000` to see your docs live.
-
-    <Tip>Your preview auto-reloads as you edit files.</Tip>
-
+  <Accordion icon="rectangle-terminal" title="Start the preview server">
+    1. Install the Mintlify CLI: `npm i -g mint` 2. Navigate to your docs
+    directory and run: `mint dev` 3. Open `http://localhost:3000` to see your
+    docs live!
+    <Tip>Your preview updates automatically as you edit files.</Tip>
   </Accordion>
-
-  <Accordion icon="key" title="Configure API Playground auth (x-api-key)">
-    If you’re exposing the LoneScale API in the Playground, add an API key security scheme to your OpenAPI file.
-
-```yaml
-openapi: 3.1.0
-components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
-security:
-  - ApiKeyAuth: []
-```
-
-Clients will send: `x-api-key: YOUR_API_KEY`.
-
-**Common errors**
-
-- `401 Invalid API Key`: key missing or incorrect.
-- Check your environment/organization API key from the LoneScale app.
-    </Accordion>
 </AccordionGroup>
 
 ### Step 2: Deploy your changes
 
 <AccordionGroup>
-  <Accordion icon="github" title="Connect GitHub for auto-deploys">
-    Install the Mintlify GitHub app from your docs dashboard. Every push to your default branch will automatically deploy your docs — no CI to manage.
-  </Accordion>
+  <Accordion icon="github" title="Install our GitHub app">
+    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    
+    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
+</Accordion>
+<Accordion icon="palette" title="Update your site name and colors">
+    For a first change, let's update the name and colors of your docs site.
 
-  <Accordion icon="palette" title="Brand your LoneScale docs">
-    1. Open `docs.json`.  
-    2. Set `"name"` to `"LoneScale Docs"` (or your project name).  
-    3. Update `"colors"` to match your brand.  
-    4. Save and check `http://localhost:3000`.
+    1. Open `docs.json` in your editor.
+    2. Change the `"name"` field to your project name.
+    3. Update the `"colors"` to match your brand.
+    4. Save and see your changes instantly at `http://localhost:3000`.
 
-    <Tip>Try changing the primary color to quickly validate your palette.</Tip>
+    <Tip>Try changing the primary color to see an immediate difference!</Tip>
 
   </Accordion>
 </AccordionGroup>
 
 ### Step 3: Go live
 
-<Accordion icon="rocket" title="Publish">
-  1. Commit and push to your main branch. 2. Your docs deploy automatically and
-  are live within moments.
+<Accordion icon="rocket" title="Publish your docs">
+  1. Commit and push your changes. 2. Your docs will update and be live in
+  moments!
 </Accordion>
 
 ## Next steps
 
-Super-charge your LoneScale docs with these essentials:
+Now that you have your docs running, explore these key features:
 
 <CardGroup cols={2}>
 
-<Card title="Write content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX and structure product and how-to guides.
+<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
+  Learn MDX syntax and start writing your documentation.
 </Card>
 
 <Card title="Customize style" icon="palette" href="/essentials/settings">
-  Tune navigation, logos, and theme to match LoneScale.
+  Make your docs match your brand perfectly.
 </Card>
 
 <Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Drop in runnable snippets and SDK examples.
+  Include syntax-highlighted code blocks.
 </Card>
 
-<Card title="API reference" icon="code" href="/api-reference/introduction">
-  Auto-generate endpoints from your OpenAPI spec (with <code>x-api-key</code>).
+<Card title="API documentation" icon="code" href="/api-reference/introduction">
+  Auto-generate API docs from OpenAPI specs.
 </Card>
 
 </CardGroup>
 
 <Note>
-  <strong>Need help?</strong> Reach us via your LoneScale support channel or
-  open an issue in your docs repo. For Mintlify usage, see their
-  <a href="https://mintlify.com/docs" target="_blank" rel="noopener noreferrer">
-    documentation
-  </a> or join the
-  <a
-    href="https://mintlify.com/community"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    community
-  </a>
-  .
+  **Need help?** See our [full documentation](https://mintlify.com/docs) or join
+  our [community](https://mintlify.com/community).
 </Note>
