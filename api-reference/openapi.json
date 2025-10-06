@@ -10,19 +10,21 @@
   },
   "servers": [
     {
-      "url": "https://public-api.lonescale.com"
+      "url": "https://public-api.lonescale.com/api"
     }
   ],
   "security": [
     {
       "ApiKeyAuth": []
+    },
+    {
+      "bearerAuth": []
     }
   ],
   "paths": {
-    "/users": {
+    "/me": {
       "get": {
         "description": "Get profile information",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "Profile information",
@@ -46,6 +48,21 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
           }
         }
       },
@@ -64,7 +81,7 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Plant successfully created",
             "content": {
               "application/json": {
                 "schema": {
@@ -74,11 +91,26 @@
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Invalid input",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
                 }
               }
             }
@@ -103,15 +135,29 @@
         ],
         "responses": {
           "204": {
-            "description": "Plant deleted",
-            "content": {}
+            "description": "Plant deleted successfully"
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Invalid request",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
                 }
               }
             }
@@ -154,19 +200,19 @@
         "type": "object",
         "properties": {
           "id": {
-            "description": "The name of the plant",
+            "description": "The user ID",
             "type": "string"
           },
           "firstName": {
-            "description": "Tag to specify the type",
+            "description": "User first name",
             "type": "string"
           },
           "lastName": {
-            "description": "Tag to specify the type",
+            "description": "User last name",
             "type": "string"
           },
           "email": {
-            "description": "Tag to specify the type",
+            "description": "User email address",
             "type": "string"
           }
         }
@@ -191,6 +237,27 @@
           }
         ]
       },
+      "Plant": {
+        "type": "object",
+        "required": [
+          "name",
+          "species"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the plant"
+          },
+          "species": {
+            "type": "string",
+            "description": "Species of the plant"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price of the plant"
+          }
+        }
+      },
       "Error": {
         "required": [
           "error",
@@ -206,6 +273,28 @@
             "type": "string"
           }
         }
+      },
+      "AuthError": {
+        "required": [
+          "message",
+          "error",
+          "statusCode"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Invalid API Key"
+          },
+          "error": {
+            "type": "string",
+            "example": "Unauthorized"
+          },
+          "statusCode": {
+            "type": "integer",
+            "example": 401
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -214,6 +303,11 @@
         "in": "header",
         "name": "x-api-key",
         "description": "Provide your API key in the x-api-key header."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }
