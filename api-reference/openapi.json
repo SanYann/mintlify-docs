@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "https://public-api.lonescale.com/api"
+      "url": "https://public-api.lonescale.com"
     }
   ],
   "security": [
@@ -19,7 +19,7 @@
     }
   ],
   "paths": {
-    "/me": {
+    "/users": {
       "get": {
         "description": "Get profile information",
         "parameters": [],
