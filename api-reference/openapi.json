@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://public-api.lonescale.com/api"
     }
   ],
   "security": [
