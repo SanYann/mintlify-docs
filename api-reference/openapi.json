@@ -19,29 +19,19 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/me": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "description": "Get profile information",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Profile information",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/User"
                   }
                 }
               }
@@ -154,17 +144,28 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
+      "User": {
         "required": [
-          "name"
+          "id",
+          "firstName",
+          "lastName",
+          "email"
         ],
         "type": "object",
         "properties": {
-          "name": {
+          "id": {
             "description": "The name of the plant",
             "type": "string"
           },
-          "tag": {
+          "firstName": {
+            "description": "Tag to specify the type",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "Tag to specify the type",
+            "type": "string"
+          },
+          "email": {
             "description": "Tag to specify the type",
             "type": "string"
           }
