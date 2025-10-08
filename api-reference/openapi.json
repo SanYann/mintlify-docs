@@ -189,11 +189,11 @@
         "example": {
           "enrichment_type": [
             "email",
-            "profile"
+            "phone"
           ],
           "custom": {
-            "provider": "clay",
-            "enrichment_type": "full_profile"
+            "provider": "lonescale",
+            "enrichment_type": "email and phone"
           },
           "contacts": [
             {
@@ -223,7 +223,7 @@
           "enrichment_type": {
             "type": "string",
             "description": "Provider-specific enrichment mode.",
-            "example": "full_profile"
+            "example": "phone"
           }
         }
       },
