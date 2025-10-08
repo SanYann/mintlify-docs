@@ -201,9 +201,9 @@
               "lastname": "Doe",
               "email": "john@acme.com",
               "job_title": "ceo",
+              "linkedin_url": "https://www.linkedin.com/in/john-doe/",
               "domain": "acme.com",
               "company_name": "Acmeo",
-              "linkedin_url": "https://www.linkedin.com/in/john-doe/",
               "custom": {
                 "contact_id": "44479301"
               }
@@ -246,18 +246,18 @@
             "format": "email"
           },
           "job_title": {
-            "type": "string"
+            "type": "string"            
           },
+          "linkedin_url": {
+            "type": "string",
+            "format": "uri"
+          },          
           "domain": {
             "type": "string",
             "description": "Company domain (e.g., acme.com)."
           },
           "company_name": {
             "type": "string"
-          },
-          "linkedin_url": {
-            "type": "string",
-            "format": "uri"
           },
           "custom": {
             "$ref": "#/components/schemas/ContactCustom"
