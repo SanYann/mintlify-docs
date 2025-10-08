@@ -163,7 +163,7 @@
               "type": "string",
               "enum": [
                 "email",
-                "profile"
+                "phone"
               ]
             },
             "minItems": 1,
