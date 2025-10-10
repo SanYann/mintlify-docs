@@ -52,6 +52,15 @@
         "tab": "API reference",
         "groups": [
           {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "quickstart",
+              "authentication",
+              "development"
+            ]
+          },
+          {
             "group": "API documentation",
             "pages": [
               "api-reference/introduction"
