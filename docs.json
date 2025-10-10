@@ -54,8 +54,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/LoneScale-Logo-White.png",
+    "dark": "/logo/LoneScale-Logo-White.png"
   },
   "navbar": {
     "links": [
