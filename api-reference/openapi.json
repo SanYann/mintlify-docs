@@ -68,7 +68,6 @@
       "post": {
         "description": "Start waterfall enrichment for contacts",
         "requestBody": {
-          "description": "Enrichment details",
           "content": {
             "application/json": {
               "schema": {
