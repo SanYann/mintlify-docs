@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "OpenAPI Lonescale",
+    "description": "A sample API for Lonescale",
     "license": {
       "name": "MIT"
     },
@@ -66,7 +66,7 @@
     },
     "/trigger/enrich": {
       "post": {
-        "description": "Create and launch enrichment for contacts",
+        "description": "Start waterfall enrichment for contacts",
         "requestBody": {
           "description": "Enrichment details",
           "content": {
