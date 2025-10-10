@@ -24,6 +24,13 @@
             "pages": [
               "api-reference/introduction"
             ]
+          },
+           {
+            "group": "API Enrichment",
+            "pages": [
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/create"
+            ]
           }
         ]
       }
