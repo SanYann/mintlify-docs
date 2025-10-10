@@ -14,7 +14,7 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "authentication"
             ]
