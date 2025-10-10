@@ -42,12 +42,12 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "href": "https://docs.lonescale.com",
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "anchor": "Help Center",
+          "href": "https://help-center.lonescale.com/",
           "icon": "newspaper"
         }
       ]
