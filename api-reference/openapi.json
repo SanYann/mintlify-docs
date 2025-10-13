@@ -42,6 +42,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Bad request",
+                  "error": "Bad request",
+                  "statusCode": 400
                 }
               }
             }
@@ -94,6 +99,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                },
+                 "example": {
+                  "message": "Bad request",
+                  "error": "Bad request",
+                  "statusCode": 400
                 }
               }
             }
