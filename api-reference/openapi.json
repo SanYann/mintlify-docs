@@ -153,6 +153,19 @@
           "email": {
             "description": "User email address",
             "type": "string"
+          },
+          "plan": {
+            "type": "object",
+            "properties":{
+              "contactCredits": {
+                "description": "Remaining contact credits",
+                "type": "number"
+              },
+              "enrichmentCredits": {
+                "description": "Remaining enrichment credits",
+                "type": "number"
+              }
+            }
           }
         }
       },
