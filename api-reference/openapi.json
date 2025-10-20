@@ -100,7 +100,64 @@
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 },
-                 "example": {
+                "example": {
+                  "message": "Bad request",
+                  "error": "Bad request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trigger/contact-sourcing": {
+      "post": {
+        "description": "Start Sourcing Contacts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactSourcingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Sourcing contacts successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sourcing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
                   "message": "Bad request",
                   "error": "Bad request",
                   "statusCode": 400
@@ -156,7 +213,7 @@
           },
           "plan": {
             "type": "object",
-            "properties":{
+            "properties": {
               "contactCredits": {
                 "description": "Remaining contact credits",
                 "type": "number"
@@ -234,6 +291,66 @@
           "webhook_url": "https://api.example.com/webhooks/enrichment"
         }
       },
+      "ContactSourcingRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "webhook_url",
+          "contacts",
+          "enrichment_type"
+        ],
+        "properties": {
+          "company_name": {
+            "type": "string",
+            "description": "Company name to source contacts from."
+          },
+          "company_linkedin_url": {
+            "type": "string",
+            "description": "Company LinkedIn URL to source contacts from."
+          },
+          "company_crm_id": {
+            "type": "string",
+            "description": "Company CRM ID to source contacts from."
+          },
+          "personas": {
+            "type": "array",
+            "description": "Personas to source contacts.",
+            "items": {
+              "$ref": "#/components/schemas/Persona"
+            },
+            "minItems": 1
+          },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Webhook endpoint to receive enrichment results."
+          },
+          "custom": {
+            "$ref": "#/components/schemas/EnrichmentCustomOptions"
+          }
+        },
+        "example": {
+          "custom": {
+            "provider": "lonescale",
+            "enrichment_type": "email and phone"
+          },
+          "personas": [
+            {
+              "firstname": "John",
+              "lastname": "Doe",
+              "email": "john@acme.com",
+              "job_title": "ceo",
+              "linkedin_url": "https://www.linkedin.com/in/john-doe/",
+              "domain": "acme.com",
+              "company_name": "Acmeo",
+              "custom": {
+                "contact_id": "44479301"
+              }
+            }
+          ],
+          "webhook_url": "https://api.example.com/webhooks/enrichment"
+        }
+      },
       "EnrichmentCustomOptions": {
         "type": "object",
         "additionalProperties": true,
@@ -268,12 +385,12 @@
             "format": "email"
           },
           "job_title": {
-            "type": "string"            
+            "type": "string"
           },
           "linkedin_url": {
             "type": "string",
             "format": "uri"
-          },          
+          },
           "domain": {
             "type": "string",
             "description": "Company domain (e.g., acme.com)."
@@ -283,6 +400,31 @@
           },
           "custom": {
             "$ref": "#/components/schemas/ContactCustom"
+          }
+        }
+      },
+      "Persona": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "job_titles",
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "job_titles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "exclude_job_titles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
