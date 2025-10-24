@@ -308,9 +308,9 @@
             "type": "string",
             "description": "Company LinkedIn URL to source contacts from."
           },
-          "company_crm_id": {
-            "type": "string",
-            "description": "Company CRM ID to source contacts from."
+          "limit": {
+            "type": "number",
+            "description": "Limit on the number of contacts to source."
           },
           "personas": {
             "type": "array",
@@ -334,18 +334,15 @@
             "provider": "lonescale",
             "enrichment_type": "email and phone"
           },
+          "company_name": "Acme Corp",
+          "limit": 10,
           "personas": [
             {
-              "firstname": "John",
-              "lastname": "Doe",
-              "email": "john@acme.com",
-              "job_title": "ceo",
-              "linkedin_url": "https://www.linkedin.com/in/john-doe/",
-              "domain": "acme.com",
-              "company_name": "Acmeo",
-              "custom": {
-                "contact_id": "44479301"
-              }
+              "name": "Tech Leaders",
+              "job_titles": [
+                "CTO",
+                "VP Engineering"
+              ]
             }
           ],
           "webhook_url": "https://api.example.com/webhooks/enrichment"
