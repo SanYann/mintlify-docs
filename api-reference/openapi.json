@@ -230,9 +230,11 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "webhook_url",
-          "contacts",
+
+
           "enrichment_type"
+          "contacts",
+          "webhook_url",
         ],
         "properties": {
           "enrichment_type": {
