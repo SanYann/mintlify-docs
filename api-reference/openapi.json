@@ -230,11 +230,9 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-
-
-          "enrichment_type"
+          "enrichment_type",
           "contacts",
-          "webhook_url",
+          "webhook_url"
         ],
         "properties": {
           "enrichment_type": {
@@ -285,12 +283,12 @@
                 "contact_id": "44479301"
               }
             }
-          ],          
+          ],
           "webhook_url": "https://api.example.com/webhooks/enrichment",
           "custom": {
             "provider": "lonescale",
             "enrichment_type": "email and phone"
-          }          
+          }
         }
       },
       "ContactSourcingRequest": {
@@ -303,7 +301,7 @@
         ],
         "properties": {
           "company_domain": {
-             "type": "string",
+            "type": "string",
             "description": "Company domain or website to search contacts from."
           },
           "company_name": {
@@ -325,7 +323,7 @@
           "limit": {
             "type": "number",
             "description": "Defines the maximum number of contacts to retrieve"
-          },          
+          },
           "webhook_url": {
             "type": "string",
             "format": "uri",
@@ -338,7 +336,7 @@
         "example": {
           "company_name": "Acme Corp",
           "company_domain": "acme.com",
-          "company_linkedin_url": "https://www.linkedin.com/company/acme"
+          "company_linkedin_url": "https://www.linkedin.com/company/acme",
           "personas": [
             {
               "name": "Tech Leaders",
@@ -352,7 +350,7 @@
           "custom": {
             "id": "12356",
             "provider": "lonescale"
-          },          
+          },
           "webhook_url": "https://api.example.com/webhooks/enrichment"
         }
       },
@@ -363,7 +361,7 @@
           "id": {
             "type": "string",
             "description": "Unique ID of the record from the CRM, database, or other source system."
-          },        
+          },
           "provider": {
             "type": "string",
             "description": "Downstream data provider to use (e.g., Lonescale)."
