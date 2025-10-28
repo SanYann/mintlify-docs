@@ -16,7 +16,8 @@
           {
             "group": "Getting Started",
             "pages": [
-              "authentication"
+              "authentication",
+              "api-reference/endpoint/get"
             ]
           },
           {
@@ -28,7 +29,6 @@
           {
             "group": "API Enrichment",
             "pages": [
-              "api-reference/endpoint/get",
               "api-reference/endpoint/create",
               "api-reference/endpoint/contact-sourcing"
             ]
