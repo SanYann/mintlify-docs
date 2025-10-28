@@ -312,10 +312,6 @@
             "type": "string",
             "description": "Company LinkedIn URL used to search contacts, increasing result coverage and accuracy by 25%."
           },
-          "limit": {
-            "type": "number",
-            "description": "Limit on the number of contacts to search."
-          },
           "personas": {
             "type": "array",
             "description": "Personas to use to search and filter contacts within the company",
@@ -324,6 +320,10 @@
             },
             "minItems": 1
           },
+          "limit": {
+            "type": "number",
+            "description": "Limit on the number of contacts to search."
+          },          
           "webhook_url": {
             "type": "string",
             "format": "uri",
@@ -334,13 +334,9 @@
           }
         },
         "example": {
-          "custom": {
-            "provider": "lonescale",
-            "enrichment_type": "email and phone"
-          },
           "company_name": "Acme Corp",
           "company_domain": "acme.com",
-          "limit": 10,
+          "company_linkedin_url": "https://www.linkedin.com/company/acme"
           "personas": [
             {
               "name": "Tech Leaders",
@@ -350,6 +346,11 @@
               ]
             }
           ],
+          "limit": 10,
+          "custom": {
+            "id": "12356",
+            "provider": "lonescale"
+          },          
           "webhook_url": "https://api.example.com/webhooks/enrichment"
         }
       },
