@@ -310,7 +310,7 @@
           },
           "company_linkedin_url": {
             "type": "string",
-            "description": "Company LinkedIn URL to search contacts from."
+            "description": "Company LinkedIn URL used to search contacts, increasing result coverage and accuracy by 25%."
           },
           "limit": {
             "type": "number",
