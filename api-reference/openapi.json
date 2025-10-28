@@ -270,10 +270,6 @@
             "email",
             "phone"
           ],
-          "custom": {
-            "provider": "lonescale",
-            "enrichment_type": "email and phone"
-          },
           "contacts": [
             {
               "firstname": "John",
@@ -287,8 +283,12 @@
                 "contact_id": "44479301"
               }
             }
-          ],
-          "webhook_url": "https://api.example.com/webhooks/enrichment"
+          ],          
+          "webhook_url": "https://api.example.com/webhooks/enrichment",
+          "custom": {
+            "provider": "lonescale",
+            "enrichment_type": "email and phone"
+          }          
         }
       },
       "ContactSourcingRequest": {
