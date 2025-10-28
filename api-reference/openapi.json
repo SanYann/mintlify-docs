@@ -296,8 +296,7 @@
         "additionalProperties": false,
         "required": [
           "webhook_url",
-          "contacts",
-          "enrichment_type"
+          "personas"
         ],
         "properties": {
           "company_name": {
