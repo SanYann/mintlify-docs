@@ -295,10 +295,15 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "webhook_url",
-          "personas"
+          "company_domain",
+          "personas",
+          "webhook_url"
         ],
         "properties": {
+          "company_domain": {
+             "type": "string",
+            "description": "Company domain or website to search contacts from."
+          },
           "company_name": {
             "type": "string",
             "description": "Company name to search contacts from."
