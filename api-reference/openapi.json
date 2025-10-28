@@ -302,19 +302,19 @@
         "properties": {
           "company_name": {
             "type": "string",
-            "description": "Company name to source contacts from."
+            "description": "Company name to search contacts from."
           },
           "company_linkedin_url": {
             "type": "string",
-            "description": "Company LinkedIn URL to source contacts from."
+            "description": "Company LinkedIn URL to search contacts from."
           },
           "limit": {
             "type": "number",
-            "description": "Limit on the number of contacts to source."
+            "description": "Limit on the number of contacts to search."
           },
           "personas": {
             "type": "array",
-            "description": "Personas to source contacts.",
+            "description": "Personas to use to search and filter contacts within the company",
             "items": {
               "$ref": "#/components/schemas/Persona"
             },
@@ -323,7 +323,7 @@
           "webhook_url": {
             "type": "string",
             "format": "uri",
-            "description": "Webhook endpoint to receive enrichment results."
+            "description": "Webhook endpoint to receive results."
           },
           "custom": {
             "$ref": "#/components/schemas/EnrichmentCustomOptions"
