@@ -128,7 +128,7 @@
     },
     "/trigger/contact-sourcing": {
       "post": {
-        "description": "Start Sourcing Contacts",
+        "description": "Search Contacts",
         "requestBody": {
           "content": {
             "application/json": {
