@@ -339,6 +339,7 @@
             "enrichment_type": "email and phone"
           },
           "company_name": "Acme Corp",
+          "company_domain": "acme.com",
           "limit": 10,
           "personas": [
             {
