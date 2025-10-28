@@ -358,9 +358,13 @@
         "type": "object",
         "additionalProperties": true,
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique ID of the record from the CRM, database, or other source system."
+          },        
           "provider": {
             "type": "string",
-            "description": "Downstream data provider to use (e.g., clay)."
+            "description": "Downstream data provider to use (e.g., Lonescale)."
           },
           "enrichment_type": {
             "type": "string",
