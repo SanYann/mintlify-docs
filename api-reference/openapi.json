@@ -322,7 +322,7 @@
           },
           "limit": {
             "type": "number",
-            "description": "Limit on the number of contacts to search."
+            "description": "Defines the maximum number of contacts to retrieve"
           },          
           "webhook_url": {
             "type": "string",
