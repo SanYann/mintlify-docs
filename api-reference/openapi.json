@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "https://public-api.lonescale.com/api"
+      "url": "https://public-api.lonescale.com"
     }
   ],
   "security": [
