@@ -30,7 +30,8 @@
             "group": "API Enrichment",
             "pages": [
               "api-reference/endpoint/create",
-              "api-reference/endpoint/contact-sourcing"
+              "api-reference/endpoint/contact-sourcing",
+              "api-reference/sourcing-payload"
             ]
           }
         ]

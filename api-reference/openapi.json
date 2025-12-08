@@ -128,7 +128,7 @@
     },
     "/trigger/contact-sourcing": {
       "post": {
-        "description": "Search Contacts",
+        "description": "Search Contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Sourcing payload](/api-reference/sourcing-payload) documentation for the full webhook schema.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -442,6 +442,111 @@
           "contact_id": {
             "type": "string",
             "description": "Optional CRM record id specific to this contact."
+          }
+        }
+      },
+      "SourcingPayload": {
+        "type": "object",
+        "properties": {
+          "client_company_name": {
+            "type": "string",
+            "description": "The company name provided in the request."
+          },
+          "client_company_domain": {
+            "type": "string",
+            "description": "The company domain provided in the request."
+          },
+          "client_company_linkedin_url": {
+            "type": "string",
+            "description": "The company LinkedIn URL provided in the request."
+          },
+          "lonescale_company_name": {
+            "type": "string",
+            "description": "The enriched company name."
+          },
+          "lonescale_company_domain": {
+            "type": "string",
+            "description": "The enriched company domain."
+          },
+          "lonescale_company_linkedin_id": {
+            "type": "string",
+            "description": "The enriched company LinkedIn ID."
+          },
+          "lonescale_company_linkedin_url": {
+            "type": "string",
+            "description": "The enriched company LinkedIn URL."
+          },
+          "lonescale_universal_name": {
+            "type": "string",
+            "description": "The enriched company universal name."
+          },
+          "lonescale_company_description": {
+            "type": "string",
+            "description": "The enriched company description."
+          },
+          "lonescale_company_industry": {
+            "type": "string",
+            "description": "The enriched company industry."
+          },
+          "lonescale_company_country": {
+            "type": "string",
+            "description": "The enriched company country."
+          },
+          "lonescale_company_country_code": {
+            "type": "string",
+            "description": "The enriched company country code."
+          },
+          "lonescale_company_employee_range": {
+            "type": "string",
+            "description": "The enriched company employee range."
+          },
+          "lonescale_company_staff_count": {
+            "type": "integer",
+            "description": "The enriched company staff count."
+          },
+          "lonescale_company_city": {
+            "type": "string",
+            "description": "The enriched company city."
+          },
+          "lonescale_job_title": {
+            "type": "string",
+            "description": "The enriched job title."
+          },
+          "lonescale_country_code": {
+            "type": "string",
+            "description": "The enriched country code."
+          },
+          "lonescale_full_name": {
+            "type": "string",
+            "description": "The enriched full name."
+          },
+          "lonescale_first_name": {
+            "type": "string",
+            "description": "The enriched first name."
+          },
+          "lonescale_last_name": {
+            "type": "string",
+            "description": "The enriched last name."
+          },
+          "lonescale_geo_country_name": {
+            "type": "string",
+            "description": "The enriched geo country name."
+          },
+          "lonescale_geo_location_name": {
+            "type": "string",
+            "description": "The enriched geo location name."
+          },
+          "lonescale_city": {
+            "type": "string",
+            "description": "The enriched city."
+          },
+          "lonescale_linkedin_url": {
+            "type": "string",
+            "description": "The enriched LinkedIn URL."
+          },
+          "message": {
+            "type": "string",
+            "description": "Status message of the sourcing job, if empty, the job was successful."
           }
         }
       },
