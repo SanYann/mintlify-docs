@@ -320,6 +320,13 @@
             },
             "minItems": 1
           },
+          "included_locations": {
+            "type": "array",
+            "description": "List of country codes (ISO 3166-1 alpha-2) to include in the search.",
+            "items": {
+              "$ref": "#/components/schemas/CountryCode"
+            }
+          },
           "limit": {
             "type": "number",
             "description": "Defines the maximum number of contacts to retrieve"
@@ -409,6 +416,33 @@
             "$ref": "#/components/schemas/ContactCustom"
           }
         }
+      },
+      "CountryCode": {
+        "type": "string",
+        "description": "ISO 3166-1 alpha-2 country code",
+        "isEnum": true,
+        "enum": [
+          "AT",
+          "BE",
+          "CA",
+          "CH",
+          "DE",
+          "DK",
+          "ES",
+          "FI",
+          "FR",
+          "GB",
+          "IE",
+          "IL",
+          "IT",
+          "LU",
+          "NL",
+          "NO",
+          "PT",
+          "SE",
+          "US",
+          "AU"
+        ]
       },
       "Persona": {
         "type": "object",
@@ -549,6 +583,11 @@
             "description": "Status message of the sourcing job, if empty, the job was successful."
           }
         }
+      },
+      "Sourcing": {
+        "type": "string",
+        "description": "Response indicating the sourcing job has been created.",
+        "example": "Sourcing started for company Acme Corp"
       },
       "Error": {
         "required": [
