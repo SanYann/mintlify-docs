@@ -71,7 +71,7 @@
     },
     "/trigger/enrich": {
       "post": {
-        "description": "Start waterfall enrichment for contacts",
+        "description": "Start waterfall enrichment for contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Enrichment payload](/api-reference/enrichment-payload) documentation for the full webhook schema.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -580,7 +580,19 @@
           },
           "message": {
             "type": "string",
-            "description": "Status message of the sourcing job, if empty, the job was successful."
+            "description": "Status message of the sourcing job, the job was successful."
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the sourcing job",
+            "enum": [
+              "not_found",
+              "end"
+            ]
+          },
+          "profiles_found": {
+            "type": "integer",
+            "description": "Number of profiles found for the sourcing job."
           }
         }
       },
@@ -588,6 +600,166 @@
         "type": "string",
         "description": "Response indicating the sourcing job has been created.",
         "example": "Sourcing started for company Acme Corp"
+      },
+      "EnrichPayload": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "string",
+            "description": "The enriched first name."
+          },
+          "lastname": {
+            "type": "string",
+            "description": "The enriched last name."
+          },
+          "domain": {
+            "type": "string",
+            "description": "The enriched company domain."
+          },
+          "most_probable_email": {
+            "type": "string",
+            "description": "The most probable email address."
+          },
+          "most_probable_email_status": {
+            "type": "string",
+            "description": "The status of the most probable email address."
+          },
+          "most_probable_phone": {
+            "type": "string",
+            "description": "The most probable phone number."
+          },
+          "most_probable_phone_type": {
+            "type": "string",
+            "description": "The type of the most probable phone number."
+          },
+          "most_probable_phone_status": {
+            "type": "string",
+            "description": "The status of the most probable phone number."
+          },
+          "most_probable_phone_country_code": {
+            "type": "string",
+            "description": "The country code of the most probable phone number."
+          },
+          "emails": {
+            "type": "array",
+            "description": "List of enriched email addresses.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "phones": {
+            "type": "array",
+            "description": "List of enriched phone numbers.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "international_format": {
+                  "type": "string"
+                },
+                "country_name": {
+                  "type": "string"
+                },
+                "country_code": {
+                  "type": "string"
+                },
+                "region": {
+                  "type": "string"
+                },
+                "prefix": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "profile": {
+            "type": "object",
+            "description": "The enriched profile information.",
+            "properties": {
+              "linkedin_url": {
+                "type": "string"
+              },
+              "linkedin_handle": {
+                "type": "string"
+              },
+              "firstname": {
+                "type": "string"
+              },
+              "lastname": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "headline": {
+                "type": "string"
+              },
+              "position": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "start_date": {
+                    "type": "object",
+                    "properties": {
+                      "month": {
+                        "type": "integer"
+                      },
+                      "year": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "end_date": {
+                    "type": "object",
+                    "properties": {
+                      "month": {
+                        "type": "integer"
+                      },
+                      "year": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "company": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "domain": {
+                        "type": "string"
+                      },
+                      "linkedin_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "Error": {
         "required": [

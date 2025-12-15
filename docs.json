@@ -31,7 +31,8 @@
             "pages": [
               "api-reference/endpoint/create",
               "api-reference/endpoint/contact-sourcing",
-              "api-reference/sourcing-payload"
+              "api-reference/sourcing-payload",
+              "api-reference/enrichment-payload"
             ]
           }
         ]
