@@ -25,7 +25,7 @@
             "pages": [
               "api-reference/endpoint/create",
               "api-reference/endpoint/contact-sourcing",
-              "api-reference/endpoint/verify-phone",
+              "api-reference/endpoint/verify-phone"
             ]
           }
           {
