@@ -823,6 +823,7 @@
         "additionalProperties": false,
         "required": [
           "phone",
+         "webhook_url",
           "firstname",
           "lastname"
         ],
@@ -831,6 +832,11 @@
             "type": "string",
             "description": "Phone number to verify, in E.164 format."
           },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Webhook endpoint to receive verification status for a phone number"
+          },           
           "firstname": {
             "type": "string",
             "description": "First name of the person to verify."
