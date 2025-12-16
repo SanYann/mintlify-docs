@@ -185,7 +185,7 @@
     },
     "/verify-phone": {
       "post": {
-        "description": "Verify email addresses.",
+        "description": "Verify Phone Numbers [Special Access Required]",
         "requestBody": {
           "content": {
             "application/json": {
@@ -841,7 +841,7 @@
           },
           "country": {
             "type": "string",
-            "description": "Country code of the phone number to verify."
+            "description": "Country code of the phone number to verify. Increase result coverage and accuracy by 25%."
           },
           "city": {
             "type": "string",
@@ -849,11 +849,11 @@
           },
           "state": {
             "type": "string",
-            "description": "State code of the phone number to verify."
+            "description": "State code of the phone number to verify. Increase result coverage and accuracy by 25%."
           },
           "zipcode": {
             "type": "string",
-            "description": "Zipcode of the phone number to verify."
+            "description": "Zipcode of the phone number to verify. Increase result coverage and accuracy by 25%."
           },
           "address": {
             "type": "string",
