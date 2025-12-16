@@ -185,7 +185,7 @@
     },
     "/verify-phone": {
       "post": {
-        "description": "Verify Phone Numbers [Special Access Required]",
+        "description": "Verify Phone Numbers \n[Special Access Required]",
         "requestBody": {
           "content": {
             "application/json": {
