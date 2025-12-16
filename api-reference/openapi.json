@@ -182,6 +182,63 @@
           }
         }
       }
+    },
+    "/verify-phone": {
+      "post": {
+        "description": "Verify email addresses.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPhoneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Phone verification successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneVerification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Bad request",
+                  "error": "Bad request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -758,6 +815,68 @@
                 }
               }
             }
+          }
+        }
+      },
+      "VerifyPhoneRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phone",
+          "firstname",
+          "lastname"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "Phone number to verify, in E.164 format."
+          },
+          "firstname": {
+            "type": "string",
+            "description": "First name of the person to verify."
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Last name of the person to verify."
+          },
+          "country": {
+            "type": "string",
+            "description": "Country code of the phone number to verify."
+          },
+          "state": {
+            "type": "string",
+            "description": "State code of the phone number to verify."
+          },
+          "zipcode": {
+            "type": "string",
+            "description": "Zipcode of the phone number to verify."
+          },
+          "address": {
+            "type": "string",
+            "description": "Address of the person to verify."
+          }
+        }
+      },
+      "PhoneVerification": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The verification status of the phone number.",
+            "enum": [
+              "verified",
+              "regular",
+              "unknown"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the phone number.",
+            "enum": [
+              "mobile",
+              "landline",
+              "unknown"
+            ]
           }
         }
       },
