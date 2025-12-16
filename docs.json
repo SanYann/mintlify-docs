@@ -26,6 +26,11 @@
               "api-reference/endpoint/create",
               "api-reference/endpoint/contact-sourcing",
               "api-reference/endpoint/verify-phone",
+            ]
+          }
+          {
+            "group": "Answer Payload",
+            "pages": [
               "api-reference/sourcing-payload",
               "api-reference/enrichment-payload"
             ]
