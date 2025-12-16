@@ -843,6 +843,10 @@
             "type": "string",
             "description": "Country code of the phone number to verify."
           },
+          "city": {
+            "type": "string",
+            "description": "City of the phone number to verify."
+          },
           "state": {
             "type": "string",
             "description": "State code of the phone number to verify."
