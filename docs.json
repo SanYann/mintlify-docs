@@ -29,7 +29,7 @@
             ]
           },
           {
-            "group": "Answer Payload",
+            "group": "Response Payload",
             "pages": [
               "api-reference/sourcing-payload",
               "api-reference/enrichment-payload"
