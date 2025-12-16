@@ -661,41 +661,107 @@
       "EnrichPayload": {
         "type": "object",
         "properties": {
-          "firstname": {
+          "firstName": {
             "type": "string",
             "description": "The enriched first name."
           },
-          "lastname": {
+          "lastName": {
             "type": "string",
             "description": "The enriched last name."
           },
-          "domain": {
+          "fullName": {
+            "type": "string",
+            "description": "The enriched full name."
+          },
+          "linkedinUrl": {
+            "type": "string",
+            "description": "The enriched LinkedIn URL."
+          },
+          "universalName": {
+            "type": "string",
+            "description": "The enriched universal name."
+          },
+          "companyDomain": {
             "type": "string",
             "description": "The enriched company domain."
           },
-          "most_probable_email": {
+          "jobTitle": {
             "type": "string",
-            "description": "The most probable email address."
+            "description": "The enriched job title."
           },
-          "most_probable_email_status": {
+          "companyDescription": {
             "type": "string",
-            "description": "The status of the most probable email address."
+            "description": "The enriched company description."
           },
-          "most_probable_phone": {
-            "type": "string",
-            "description": "The most probable phone number."
+          "companyEmployeeCount": {
+            "type": "integer",
+            "description": "The enriched company employee count."
           },
-          "most_probable_phone_type": {
+          "companyIndustry": {
             "type": "string",
-            "description": "The type of the most probable phone number."
+            "description": "The enriched company industry."
           },
-          "most_probable_phone_status": {
+          "companyLinkedinId": {
             "type": "string",
-            "description": "The status of the most probable phone number."
+            "description": "The enriched company LinkedIn ID."
           },
-          "most_probable_phone_country_code": {
+          "companyLinkedinUrl": {
             "type": "string",
-            "description": "The country code of the most probable phone number."
+            "description": "The enriched company LinkedIn URL."
+          },
+          "companyName": {
+            "type": "string",
+            "description": "The enriched company name."
+          },
+          "companyEmployeeRange": {
+            "type": "string",
+            "description": "The enriched company employee range."
+          },
+          "companyCountryCode": {
+            "type": "string",
+            "description": "The enriched company country code."
+          },
+          "companyCountry": {
+            "type": "string",
+            "description": "The enriched company country."
+          },
+          "companyCity": {
+            "type": "string",
+            "description": "The enriched company city."
+          },
+          "jobTitleSince": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "integer"
+              },
+              "year": {
+                "type": "integer"
+              }
+            }
+          },
+          "companySince": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "integer"
+              },
+              "year": {
+                "type": "integer"
+              }
+            }
+          },
+          "email": {
+            "type": "string",
+            "description": "The enriched email address."
+          },
+          "emailStatus": {
+            "type": "string",
+            "description": "The enriched email status."
+          },
+          "phone": {
+            "type": "string",
+            "description": "The enriched phone number."
           },
           "emails": {
             "type": "array",
@@ -718,100 +784,11 @@
             "items": {
               "type": "object",
               "properties": {
-                "type": {
-                  "type": "string"
-                },
                 "number": {
-                  "type": "string"
-                },
-                "international_format": {
-                  "type": "string"
-                },
-                "country_name": {
-                  "type": "string"
-                },
-                "country_code": {
                   "type": "string"
                 },
                 "region": {
                   "type": "string"
-                },
-                "prefix": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "profile": {
-            "type": "object",
-            "description": "The enriched profile information.",
-            "properties": {
-              "linkedin_url": {
-                "type": "string"
-              },
-              "linkedin_handle": {
-                "type": "string"
-              },
-              "firstname": {
-                "type": "string"
-              },
-              "lastname": {
-                "type": "string"
-              },
-              "location": {
-                "type": "string"
-              },
-              "summary": {
-                "type": "string"
-              },
-              "headline": {
-                "type": "string"
-              },
-              "position": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "start_date": {
-                    "type": "object",
-                    "properties": {
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
-                      }
-                    }
-                  },
-                  "end_date": {
-                    "type": "object",
-                    "properties": {
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
-                      }
-                    }
-                  },
-                  "company": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "domain": {
-                        "type": "string"
-                      },
-                      "linkedin_url": {
-                        "type": "string"
-                      }
-                    }
-                  }
                 }
               }
             }
