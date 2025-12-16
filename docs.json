@@ -21,12 +21,6 @@
             ]
           },
           {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
             "group": "API Enrichment",
             "pages": [
               "api-reference/endpoint/create",
