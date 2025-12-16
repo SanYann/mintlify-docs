@@ -31,8 +31,8 @@
           {
             "group": "Webhook Payload",
             "pages": [
-              "api-reference/webhookpayload/sourcing-payload",
-              "api-reference/webhookpayload/enrichment-payload"
+              "api-reference/webhookpayload/enrichment-payload",
+              "api-reference/webhookpayload/sourcing-payload"
             ]
           }
         ]
