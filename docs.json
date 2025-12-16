@@ -29,7 +29,7 @@
             ]
           },
           {
-            "group": "Response Payload",
+            "group": "Webhook Payload",
             "pages": [
               "api-reference/sourcing-payload",
               "api-reference/enrichment-payload"
