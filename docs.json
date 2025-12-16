@@ -27,7 +27,7 @@
               "api-reference/endpoint/contact-sourcing",
               "api-reference/endpoint/verify-phone"
             ]
-          }
+          },
           {
             "group": "Answer Payload",
             "pages": [
