@@ -763,6 +763,14 @@
             "type": "string",
             "description": "The enriched phone number."
           },
+          "phoneType": {
+            "type": "string",
+            "description": "The enriched phone type."
+          },
+          "phoneCountryCode": {
+            "type": "string",
+            "description": "The enriched phone country code."
+          },
           "emails": {
             "type": "array",
             "description": "List of enriched email addresses.",
@@ -800,7 +808,7 @@
         "additionalProperties": false,
         "required": [
           "phone",
-         "webhook_url",
+          "webhook_url",
           "firstname",
           "lastname"
         ],
@@ -813,7 +821,7 @@
             "type": "string",
             "format": "uri",
             "description": "Webhook endpoint to receive verification status for a phone number"
-          },           
+          },
           "firstname": {
             "type": "string",
             "description": "First name of the person to verify."
