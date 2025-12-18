@@ -71,7 +71,7 @@
     },
     "/trigger/enrich": {
       "post": {
-        "description": "Start waterfall enrichment for contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Enrichment payload](/api-reference/enrichment-payload) documentation for the full webhook schema.",
+        "description": "Start waterfall enrichment for contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Enrichment payload](/api-reference/webhookpayload/enrichment-payload) documentation for the full webhook schema.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -128,7 +128,7 @@
     },
     "/trigger/contact-sourcing": {
       "post": {
-        "description": "Search Contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Sourcing payload](/api-reference/sourcing-payload) documentation for the full webhook schema.",
+        "description": "Search Contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Sourcing payload](/api-reference/webhookpayload/sourcing-payload) documentation for the full webhook schema.",
         "requestBody": {
           "content": {
             "application/json": {
