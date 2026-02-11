@@ -393,6 +393,10 @@
             "format": "uri",
             "description": "Webhook endpoint to receive results."
           },
+          "disable_company_info": {
+            "type": "boolean",
+            "description": "Disable enrichment of company information for each contact, such as industry, size, etc. This option is useful if you only want to retrieve contact information without any company details."
+          },
           "custom": {
             "$ref": "#/components/schemas/EnrichmentCustomOptions"
           }
