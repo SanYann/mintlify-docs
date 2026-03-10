@@ -397,6 +397,13 @@
             "type": "boolean",
             "description": "Disable enrichment of company information for each contact, such as industry, size, etc. This option is useful if you only want to retrieve contact information without any company details."
           },
+          "seniority_levels": {
+            "type": "array",
+            "description": "List of seniority levels to filter contacts by.",
+            "items": {
+              "$ref": "#/components/schemas/SeniorityCategory"
+            }
+          },
           "custom": {
             "$ref": "#/components/schemas/EnrichmentCustomOptions"
           }
@@ -477,6 +484,23 @@
             "$ref": "#/components/schemas/ContactCustom"
           }
         }
+      },
+      "SeniorityCategory": {
+        "type": "string",
+        "description": "Seniority level of a contact.",
+        "enum": [
+          "owner",
+          "founder",
+          "c-suite",
+          "partner",
+          "vp",
+          "head",
+          "director",
+          "manager",
+          "senior",
+          "entry",
+          "intern"
+        ]
       },
       "CountryCode": {
         "type": "string",
