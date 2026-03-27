@@ -299,7 +299,8 @@
               "type": "string",
               "enum": [
                 "email",
-                "phone"
+                "phone",
+                "profile"
               ]
             },
             "minItems": 1,
@@ -320,6 +321,10 @@
             "type": "string",
             "format": "uri",
             "description": "Webhook endpoint to receive enrichment results."
+          },
+          "detect_job_change": {
+            "type": "boolean",
+            "description": "When `true`, the webhook response will include a `job_change_detected` field indicating whether the contact has changed company since the input data was provided.\n\nOnly effective when `enrichment_type` includes `\"profile\"` and `webhook_url` is provided."
           }
         },
         "example": {
@@ -1055,6 +1060,10 @@
                 }
               }
             }
+          },
+          "job_change_detected": {
+            "type": "boolean",
+            "description": "Indicates whether the contact has changed company since the input data was provided.\n\n- `true` — the enriched company (domain or name) differs from the one in the input contact\n- `false` — the company is the same, or there is not enough data to determine a change\n\nOnly present in the webhook payload when `detect_job_change: true` was set in the request. Detection first compares company domains using fuzzy matching, falling back to company name if domains are unavailable."
           }
         }
       },
