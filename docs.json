@@ -29,6 +29,18 @@
             ]
           },
           {
+            "group": "Lists",
+            "pages": [
+              "api-reference/endpoint/lists-get-all",
+              "api-reference/endpoint/lists-create",
+              "api-reference/endpoint/lists-get",
+              "api-reference/endpoint/lists-delete",
+              "api-reference/endpoint/lists-get-items",
+              "api-reference/endpoint/lists-add-item",
+              "api-reference/endpoint/lists-delete-item"
+            ]
+          },
+          {
             "group": "Webhook Payload",
             "pages": [
               "api-reference/webhookpayload/enrichment-payload",
