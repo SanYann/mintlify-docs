@@ -126,6 +126,93 @@
         }
       }
     },
+    "/trigger/contact-sourcing/sync": {
+      "post": {
+        "description": "Search contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactSourcingSyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Contacts sourced successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactSourcingSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Bad request",
+                  "error": "Bad request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient contact credits or admin not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "User has no contact credits",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded — max 5 requests per minute",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "ThrottlerException: Too Many Requests",
+                  "error": "Too Many Requests",
+                  "statusCode": 429
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/trigger/contact-sourcing": {
       "post": {
         "description": "Search Contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Sourcing payload](/api-reference/webhookpayload/sourcing-payload) documentation for the full webhook schema.",
@@ -853,6 +940,149 @@
             "provider": "lonescale",
             "enrichment_type": "email and phone"
           }
+        }
+      },
+      "ContactSourcingSyncRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "personas"
+        ],
+        "properties": {
+          "company_domain": {
+            "type": "string",
+            "description": "Company domain or website to search contacts from."
+          },
+          "company_name": {
+            "type": "string",
+            "description": "Company name to search contacts from."
+          },
+          "company_linkedin_url": {
+            "type": "string",
+            "description": "Company LinkedIn URL used to search contacts, increasing result coverage and accuracy by 25%."
+          },
+          "personas": {
+            "type": "array",
+            "description": "Personas to use to search and filter contacts within the company.",
+            "items": {
+              "$ref": "#/components/schemas/Persona"
+            },
+            "minItems": 1
+          },
+          "included_locations": {
+            "type": "array",
+            "description": "List of country codes (ISO 3166-1 alpha-2) to include in the search.",
+            "items": {
+              "$ref": "#/components/schemas/CountryCode"
+            }
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of contacts to retrieve. Capped at 10.",
+            "maximum": 10
+          },
+          "seniority_levels": {
+            "type": "array",
+            "description": "List of seniority levels to filter contacts by.",
+            "items": {
+              "$ref": "#/components/schemas/SeniorityCategory"
+            }
+          },
+          "disable_company_info": {
+            "type": "boolean",
+            "description": "Disable enrichment of company information for each contact, such as industry, size, etc."
+          },
+          "custom": {
+            "$ref": "#/components/schemas/EnrichmentCustomOptions"
+          }
+        },
+        "example": {
+          "company_name": "Acme Corp",
+          "company_domain": "acme.com",
+          "company_linkedin_url": "https://www.linkedin.com/company/acme",
+          "personas": [
+            {
+              "name": "Tech Leaders",
+              "job_titles": [
+                "CTO",
+                "VP Engineering"
+              ]
+            }
+          ],
+          "limit": 5,
+          "custom": {
+            "id": "12356",
+            "provider": "lonescale"
+          }
+        }
+      },
+      "ContactSourcingSyncResponse": {
+        "type": "object",
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "description": "List of sourced contacts.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "lonescale_full_name": { "type": "string" },
+                "lonescale_first_name": { "type": "string" },
+                "lonescale_last_name": { "type": "string" },
+                "lonescale_linkedin_url": { "type": "string" },
+                "lonescale_job_title": { "type": "string" },
+                "lonescale_job_seniority": { "type": "string" },
+                "lonescale_department": { "type": "string" },
+                "lonescale_country_code": { "type": "string" },
+                "lonescale_geo_country_name": { "type": "string" },
+                "lonescale_geo_location_name": { "type": "string" },
+                "lonescale_city": { "type": "string" },
+                "lonescale_company_name": { "type": "string" },
+                "lonescale_company_domain": { "type": "string" },
+                "lonescale_company_linkedin_url": { "type": "string" },
+                "lonescale_company_linkedin_id": { "type": "string" },
+                "lonescale_universal_name": { "type": "string" },
+                "lonescale_company_industry": { "type": "string" },
+                "lonescale_company_country": { "type": "string" },
+                "lonescale_company_country_code": { "type": "string" },
+                "lonescale_company_staff_count": { "type": "integer" },
+                "lonescale_company_employee_range": { "type": "string" },
+                "lonescale_company_city": { "type": "string" },
+                "client_company_name": { "type": "string" },
+                "client_company_domain": { "type": "string" },
+                "client_company_linkedin_url": { "type": "string" },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Custom fields passed in the request."
+                }
+              }
+            }
+          },
+          "profiles_found": {
+            "type": "integer",
+            "description": "Total number of contacts found."
+          }
+        },
+        "example": {
+          "contacts": [
+            {
+              "lonescale_full_name": "Jane Doe",
+              "lonescale_first_name": "Jane",
+              "lonescale_last_name": "Doe",
+              "lonescale_linkedin_url": "https://www.linkedin.com/in/janedoe",
+              "lonescale_job_title": "CTO",
+              "lonescale_job_seniority": "C_SUITE",
+              "lonescale_country_code": "US",
+              "lonescale_geo_country_name": "United States",
+              "lonescale_company_name": "Acme Corp",
+              "lonescale_company_domain": "acme.com",
+              "lonescale_company_industry": "Software",
+              "lonescale_company_staff_count": 250,
+              "client_company_name": "Acme Corp",
+              "client_company_domain": "acme.com"
+            }
+          ],
+          "profiles_found": 1
         }
       },
       "ContactSourcingRequest": {
