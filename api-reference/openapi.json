@@ -126,6 +126,93 @@
         }
       }
     },
+    "/trigger/enrich/sync": {
+      "post": {
+        "description": "Enrich contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrichmentSyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Contacts enriched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncEnrichmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Bad request",
+                  "error": "Bad request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient enrichment credits or admin not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "User has no enrichment credits",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded — max 5 requests per minute",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "ThrottlerException: Too Many Requests",
+                  "error": "Too Many Requests",
+                  "statusCode": 429
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/trigger/contact-sourcing/sync": {
       "post": {
         "description": "Search contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
@@ -940,6 +1027,99 @@
             "provider": "lonescale",
             "enrichment_type": "email and phone"
           }
+        }
+      },
+      "EnrichmentSyncRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "enrichment_type",
+          "contacts"
+        ],
+        "properties": {
+          "enrichment_type": {
+            "type": "array",
+            "description": "Types of enrichment to perform.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "email",
+                "phone",
+                "profile"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "custom": {
+            "$ref": "#/components/schemas/EnrichmentCustomOptions"
+          },
+          "contacts": {
+            "type": "array",
+            "description": "Contacts to enrich. Maximum 10 contacts per request.",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            },
+            "minItems": 1,
+            "maxItems": 10
+          },
+          "detect_job_change": {
+            "type": "boolean",
+            "description": "When `true`, each contact in the response will include a `jobChangeDetected` field indicating whether the contact has changed company since the input data was provided.\n\nOnly effective when `enrichment_type` includes `\"profile\"`."
+          }
+        },
+        "example": {
+          "enrichment_type": [
+            "email",
+            "phone"
+          ],
+          "contacts": [
+            {
+              "firstname": "John",
+              "lastname": "Doe",
+              "email": "john@acme.com",
+              "job_title": "ceo",
+              "linkedin_url": "https://www.linkedin.com/in/john-doe/",
+              "domain": "acme.com",
+              "company_name": "Acme",
+              "custom": {
+                "contact_id": "44479301"
+              }
+            }
+          ],
+          "custom": {
+            "provider": "lonescale",
+            "enrichment_type": "email and phone"
+          }
+        }
+      },
+      "SyncEnrichmentResponse": {
+        "type": "object",
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "description": "List of enriched contacts.",
+            "items": {
+              "$ref": "#/components/schemas/EnrichPayload"
+            }
+          }
+        },
+        "example": {
+          "contacts": [
+            {
+              "firstName": "John",
+              "lastName": "Doe",
+              "fullName": "John Doe",
+              "linkedinUrl": "https://www.linkedin.com/in/john-doe/",
+              "jobTitle": "CEO",
+              "companyName": "Acme",
+              "companyDomain": "acme.com",
+              "email": "john@acme.com",
+              "emailStatus": "valid",
+              "phone": "+14155552671",
+              "phoneType": "mobile"
+            }
+          ]
         }
       },
       "ContactSourcingSyncRequest": {
