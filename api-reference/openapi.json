@@ -915,6 +915,104 @@
           }
         }
       }
+    },
+    "/companies/search": {
+      "get": {
+        "description": "Resolve a single company by domain, LinkedIn id, LinkedIn slug, or name and return a stable, fixed-shape result.\n\nAt least one of `domain`, `linkedin_id`, `slug`, or `name` is required. The response always returns the same set of fields — `null` (or `[]` for arrays) is used for any field we do not have data for, so client integrations can rely on a stable schema.\n\nWhen `enrich=true` and no cached match is found, the API will trigger an on-demand enrichment via data-sync; when `enrich=true` and a result has both a LinkedIn id and a universal name, a function-by-function headcount breakdown is also attached.\n\nThe optional `custom` map (e.g. `custom[crm_id]=abc-123`) is echoed back unchanged at the top level of the response — useful for correlating results with records on your side.\n\nRate limited to **5 requests per minute**.",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "description": "Company domain (e.g. `stripe.com`). Schemes, `www.`, paths, and casing are normalized server-side.",
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "linkedin_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric LinkedIn company id (the digits in `linkedin.com/company/{id}`).",
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": false,
+            "description": "LinkedIn universal name / slug (the trailing segment in `linkedin.com/company/{slug}`).",
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Company name. Best-effort match — prefer `domain`, `linkedin_id`, or `slug` for deterministic resolution.",
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "enrich",
+            "in": "query",
+            "required": false,
+            "description": "When `true`, fall back to on-demand enrichment if no cached match is found, and attach a `headcount` breakdown when possible. Defaults to `false`.",
+            "schema": { "type": "boolean", "default": false }
+          },
+          {
+            "name": "custom",
+            "in": "query",
+            "required": false,
+            "description": "Arbitrary key/value passthrough echoed unchanged in the response — useful for correlating results with records on your side. Pass a **URL-encoded JSON object**, e.g. `custom=%7B%22crm_id%22%3A%22abc-123%22%2C%22priority%22%3A1%7D` (decodes to `{\"crm_id\":\"abc-123\",\"priority\":1}`). Only flat string/number values are kept — nested objects, arrays, booleans and null are dropped.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search completed. `results` contains at most one company, or is empty when nothing matched.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CompanySearchResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input — typically no filter provided, or an empty filter value.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "at least one of name, domain, linkedin_id, slug is required",
+                  "error": "Bad Request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded — max 5 requests per minute",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "ThrottlerException: Too Many Requests",
+                  "error": "Too Many Requests",
+                  "statusCode": 429
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2214,6 +2312,123 @@
           "contact_id": {
             "type": "string",
             "description": "Optional CRM record ID for this contact."
+          }
+        }
+      },
+      "CompanySearchResponse": {
+        "type": "object",
+        "required": ["results", "count", "custom"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "description": "At most one matching company. Empty when nothing was found.",
+            "items": { "$ref": "#/components/schemas/CompanySearchResult" }
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of items in `results` (0 or 1).",
+            "example": 1
+          },
+          "custom": {
+            "type": "object",
+            "description": "The `custom` map from the request, echoed unchanged. `{}` when none was sent.",
+            "additionalProperties": {
+              "oneOf": [
+                { "type": "string" },
+                { "type": "number" }
+              ]
+            },
+            "example": { "crm_id": "abc-123", "priority": "1" }
+          }
+        }
+      },
+      "CompanySearchResult": {
+        "type": "object",
+        "description": "Stable, fixed-shape company hit. Every field is always present — `null` (or `[]`) is used for any datum we do not have.",
+        "required": [
+          "linkedinId",
+          "linkedinUniversalName",
+          "linkedinUrl",
+          "name",
+          "domain",
+          "websiteUrl",
+          "logoUrl",
+          "description",
+          "linkedinTagline",
+          "industry",
+          "foundedYear",
+          "staffCount",
+          "staffCountRange",
+          "countryCode",
+          "city",
+          "postalCode",
+          "linkedinSpecialities",
+          "linkedinHashtags",
+          "confirmedLocations",
+          "fundingData",
+          "headcount"
+        ],
+        "properties": {
+          "linkedinId": { "type": ["string", "null"], "example": "2135371" },
+          "linkedinUniversalName": { "type": ["string", "null"], "example": "stripe" },
+          "linkedinUrl": { "type": ["string", "null"], "example": "https://www.linkedin.com/company/stripe" },
+          "name": { "type": ["string", "null"], "example": "Stripe" },
+          "domain": { "type": ["string", "null"], "example": "stripe.com" },
+          "websiteUrl": { "type": ["string", "null"], "example": "https://stripe.com" },
+          "logoUrl": { "type": ["string", "null"] },
+          "description": { "type": ["string", "null"] },
+          "linkedinTagline": { "type": ["string", "null"], "example": "Help increase the GDP of the internet." },
+          "industry": { "type": ["string", "null"], "example": "Computer Software" },
+          "foundedYear": { "type": ["integer", "null"], "example": 2010 },
+          "staffCount": { "type": ["integer", "null"], "example": 13809 },
+          "staffCountRange": {
+            "type": ["object", "null"],
+            "properties": {
+              "start": { "type": "integer" },
+              "end": { "type": "integer" }
+            },
+            "example": { "start": 5001, "end": 10000 }
+          },
+          "countryCode": { "type": ["string", "null"], "example": "US" },
+          "city": { "type": ["string", "null"], "example": "South San Francisco" },
+          "postalCode": { "type": ["string", "null"], "example": "94080" },
+          "linkedinSpecialities": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "linkedinHashtags": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "confirmedLocations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "country": { "type": "string" },
+                "geographicArea": { "type": "string" },
+                "city": { "type": "string" },
+                "postalCode": { "type": "string" },
+                "line1": { "type": "string" },
+                "headquarter": { "type": "boolean" }
+              }
+            }
+          },
+          "fundingData": {
+            "type": ["object", "null"],
+            "description": "Crunchbase-derived funding info when available."
+          },
+          "headcount": {
+            "type": ["array", "null"],
+            "description": "Function-by-function employee breakdown. Only populated when `enrich=true` AND the result has both `linkedinId` and `linkedinUniversalName`.",
+            "items": {
+              "type": "object",
+              "required": ["function", "count"],
+              "properties": {
+                "function": { "type": "string", "example": "Engineering" },
+                "count": { "type": "integer", "example": 5058 }
+              }
+            }
           }
         }
       },

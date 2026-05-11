@@ -31,6 +31,12 @@
             ]
           },
           {
+            "group": "Companies",
+            "pages": [
+              "api-reference/endpoint/companies-search"
+            ]
+          },
+          {
             "group": "Lists",
             "pages": [
               "api-reference/endpoint/lists-get-all",
