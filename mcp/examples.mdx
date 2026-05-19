@@ -1,0 +1,60 @@
+---
+title: "Examples"
+icon: "sparkles"
+---
+
+Three prompts you can paste straight into a Claude chat once the LoneScale connector is connected. Each shows the tool Claude is expected to pick and the rough shape of the answer.
+
+## 1. Look up a company
+
+> _"Look up the company at **stripe.com** on LoneScale — I want the name, industry, headcount, and LinkedIn URL."_
+
+**What Claude does:** calls `public-api-companies-search` with `domain: "stripe.com"`.
+
+**Sample response:**
+```json
+{
+  "linkedinId": "stripe",
+  "linkedinUrl": "https://www.linkedin.com/company/stripe",
+  "name": "Stripe",
+  "domain": "stripe.com",
+  "industry": "Financial Services",
+  "staffCount": 8000,
+  "headcount": { "engineering": 2400, "sales": 600, ... }
+}
+```
+
+Add **"and break headcount down by function"** to your prompt and Claude will set `enrich: true`, which returns a function-level breakdown.
+
+## 2. Enrich a list of contacts with email + phone
+
+> _"Here are 3 LinkedIn URLs:
+> - https://www.linkedin.com/in/patrickcollison
+> - https://www.linkedin.com/in/johncollison
+> - https://www.linkedin.com/in/cristinacordova
+>
+> Enrich each one with email and phone using LoneScale."_
+
+**What Claude does:**
+1. Calls `public-api-enrich` with `enrichment_type: ["email", "phone"]` and the 3 contacts. Gets back a `lonescale_job_id`.
+2. Polls `get-job-result` every few seconds until the status flips from `pending` to `ready`.
+3. Shows you a table with the enriched email + phone for each contact.
+
+Enrichment is **waterfall** — LoneScale tries multiple providers and returns the first hit per contact. Most jobs finish in under 60 seconds.
+
+## 3. Source contacts at a company
+
+> _"Find 10 engineering managers at **figma.com** based in the US, and show me their LinkedIn URLs and current titles."_
+
+**What Claude does:**
+1. Calls `public-api-contact-sourcing` with `company_domain: "figma.com"`, `personas: ["engineering manager"]`, `included_locations: ["United States"]`, `limit: 10`. Gets back a `lonescale_job_id`.
+2. Polls `get-job-result` until the job is `ready` (sourcing typically takes 1–3 minutes).
+3. Returns the list of sourced contacts inline.
+
+Chain it with prompt 2 ("…now enrich those 10 contacts with email") and Claude will pipe the LinkedIn URLs from the sourcing result straight into `public-api-enrich`.
+
+## Tips
+
+- **Be explicit about LoneScale.** Mentioning "LoneScale" in the prompt makes Claude pick the right connector when you have several connected.
+- **Don't interrupt async jobs.** While Claude is polling `get-job-result`, don't send a new message — it will lose the `lonescale_job_id` and have to restart.
+- **Custom metadata.** All tools accept an optional `custom` map that's echoed back in webhook payloads. Useful when you're chaining LoneScale with a CRM update further downstream.

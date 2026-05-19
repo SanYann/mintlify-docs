@@ -1,0 +1,67 @@
+---
+title: "Connect to Claude"
+icon: "plug"
+---
+
+The LoneScale MCP server can be added to Claude as a **custom connector**. Connection uses OAuth 2.0 — Claude will pop up a LoneScale consent screen where you paste your API key, then Claude stores the access token and reuses it for every tool call.
+
+## Prerequisites
+
+- A LoneScale API key — copy it from **Dashboard → Integrations → Public API**.
+- A Claude account on a plan that supports custom connectors (currently Claude.ai web + Claude Desktop).
+
+<Card title="Get my API key" icon="key" href="https://app.lonescale.com/app/integrations">
+</Card>
+
+## Add the connector
+
+<Steps>
+  <Step title="Open Claude settings">
+    In **Claude.ai** → **Settings → Connectors** (or **Claude Desktop → Settings → Connectors**), click **Add custom connector**.
+  </Step>
+  <Step title="Paste the MCP URL">
+    Server URL:
+    ```
+    https://mcp-enrich.lonescale.com/mcp
+    ```
+    Name it `LoneScale` (or whatever you'd like to see in the tool picker).
+  </Step>
+  <Step title="Authorize">
+    Claude redirects you to the LoneScale consent screen. Paste your API key and click **Authorize**. You'll be sent back to Claude, and the connector status flips to **Connected**.
+  </Step>
+  <Step title="Try it">
+    Start a new chat and ask Claude something like _"Search LoneScale for the company at stripe.com"_. You should see Claude call `public-api-companies-search` and return the result. Head to [Examples](/mcp/examples) for more.
+  </Step>
+</Steps>
+
+## OAuth flow under the hood
+
+For client implementers (or anyone curious), here's what happens during the consent flow:
+
+1. Claude discovers the server's auth metadata via:
+   - `GET /.well-known/oauth-protected-resource` (RFC 9728)
+   - `GET /.well-known/oauth-authorization-server` (RFC 8414)
+2. Claude **dynamically registers** itself via `POST /register` (RFC 7591). It receives a `client_id` scoped to its `redirect_uri` (`https://claude.com/api/mcp/auth_callback`).
+3. Claude opens `/authorize?client_id=…&redirect_uri=…&code_challenge=…&code_challenge_method=S256` in your browser. You see the LoneScale consent screen and paste your API key.
+4. LoneScale verifies the API key, issues a one-time `code`, and redirects back to Claude with `?code=…&state=…`.
+5. Claude exchanges the code at `POST /token` with the PKCE `code_verifier`. The response contains an `access_token` that Claude attaches as `Authorization: Bearer …` to every subsequent `/mcp` call.
+
+## Disconnect
+
+To revoke access, open **Settings → Connectors** in Claude and click **Disconnect** on the LoneScale row. Your API key itself stays valid — rotate it in the LoneScale dashboard if you want to invalidate it everywhere.
+
+## Other clients
+
+The same server works with any MCP-aware client that supports Streamable HTTP + OAuth, including:
+
+- [Cursor](https://docs.cursor.com/context/mcp) — add it under **Settings → MCP → Add custom server**.
+- Custom agents built with the [Anthropic SDK](https://docs.anthropic.com/) via the `mcp-remote` adapter.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `401 Unauthorized` after authorizing | API key was rotated or revoked | Reconnect with a fresh key |
+| Consent screen says "Unknown client_id" | Stale connector entry | Remove the connector and add it again |
+| Tool calls hang on async jobs | Webhook delay | Claude will poll `get-job-result`; results usually arrive within 60s for enrichment, a few minutes for sourcing |
+| Need help | — | Email [happy@lonescale.com](mailto:happy@lonescale.com) |
