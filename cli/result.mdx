@@ -1,0 +1,54 @@
+---
+title: "lonescale result"
+icon: "clock-rotate-left"
+---
+
+Retrieve the status and result of an async job started by [`lonescale enrich`](/cli/enrich) or [`lonescale source`](/cli/source).
+
+## Synopsis
+
+```bash
+lonescale result <job-id> [--poll] [--interval <seconds>] [--timeout <seconds>]
+```
+
+## Examples
+
+```bash
+# One-shot status check
+lonescale result abc-123
+
+# Poll every 5 seconds until the job finishes, max 3 minutes
+lonescale result abc-123 --poll --interval 5 --timeout 180
+
+# Capture only the final JSON for further processing
+lonescale result abc-123 --poll --output json > results.json
+```
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `<job-id>` | **Required.** The job ID returned by `enrich` or `source`. |
+| `--poll` | Keep polling until the job finishes (or until `--timeout` expires). |
+| `--interval <seconds>` | Seconds between polls (default 3). |
+| `--timeout <seconds>` | Max wait time before giving up (default 120). |
+
+Plus all [global options](/cli/overview#global-options).
+
+## Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Job finished successfully (or status was returned without `--poll`). |
+| `1` | Job failed, timed out, or the CLI couldn't reach the API. Inspect stderr for details. |
+
+This means you can chain `lonescale result` safely in shell scripts:
+
+```bash
+JOB_ID=$(lonescale enrich --type email --contacts c.json --output minimal)
+if lonescale result "$JOB_ID" --poll --output json > results.json; then
+  echo "Enrichment ready in results.json"
+else
+  echo "Job failed — check the logs"
+fi
+```

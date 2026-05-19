@@ -1,0 +1,83 @@
+---
+title: "Overview"
+icon: "terminal"
+---
+
+The **LoneScale CLI** (`lonescale`) is the official command-line client for the LoneScale Public API. Use it to enrich contacts, source contacts by persona, look up companies, and poll async jobs — all from your terminal or a shell script.
+
+It's a thin wrapper around the same REST endpoints documented under [API Reference](/authentication), with terminal-friendly output, file/stdin/inline input, and built-in polling.
+
+## Install
+
+```bash
+npm install -g @lonescale/cli
+```
+
+Or run without installing:
+
+```bash
+npx @lonescale/cli --help
+```
+
+Requires Node.js ≥ 18.
+
+## Authenticate
+
+Get your API key from **Dashboard → Integrations → Public API** and provide it in one of three ways (checked in this order):
+
+<Steps>
+  <Step title="Per-command flag (highest priority)">
+    ```bash
+    lonescale enrich --api-key ls_xxx ...
+    ```
+  </Step>
+  <Step title="Environment variable">
+    ```bash
+    export LONESCALE_API_KEY=ls_xxx
+    lonescale enrich ...
+    ```
+  </Step>
+  <Step title="Config file">
+    ```bash
+    mkdir -p ~/.lonescale
+    echo '{ "api_key": "ls_xxx" }' > ~/.lonescale/config.json
+    ```
+  </Step>
+</Steps>
+
+<Card title="Get my API key" icon="key" href="https://app.lonescale.com/app/integrations">
+</Card>
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| [`lonescale enrich`](/cli/enrich) | Waterfall enrichment (email / phone) for a list of contacts |
+| [`lonescale source`](/cli/source) | Source contacts at a company by persona, seniority, location |
+| [`lonescale companies search`](/cli/companies-search) | Look up a single company by name, domain, LinkedIn slug, or ID |
+| [`lonescale result`](/cli/result) | Poll the status / result of an async job |
+
+## Global options
+
+These flags work with every command:
+
+| Option | Description |
+| --- | --- |
+| `--api-key <key>` | LoneScale API key (overrides env + config file) |
+| `--output <format>` | `json` (default when piped), `table` (default in TTY), or `minimal` (just the id/status — script-friendly) |
+| `--debug` | Print HTTP requests / responses to stderr. API keys are redacted automatically. |
+
+## Output formats
+
+Data goes to **stdout**, logs go to **stderr** — so you can pipe results cleanly into `jq`, `xargs`, `tee`, etc.
+
+```bash
+# Count returned contacts
+lonescale source --domain acme.com --personas p.json --wait --output json \
+  | jq '.contacts | length'
+
+# Capture just the job ID
+JOB_ID=$(lonescale enrich --type email --contacts c.json --output minimal)
+```
+
+See [Recipes](/cli/recipes) for more scripting patterns.

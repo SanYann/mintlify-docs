@@ -1,0 +1,68 @@
+---
+title: "lonescale companies search"
+icon: "building"
+---
+
+Look up a single company on LoneScale by name, domain, LinkedIn slug, or LinkedIn ID. Returns one fixed-shape company profile (every field is always present, with `null` / `[]` for missing data). This is a synchronous call — results come back inline.
+
+## Synopsis
+
+```bash
+lonescale companies search [--name <name>] [--domain <domain>] [--linkedin-id <id>] [--slug <slug>] [--enrich] [--custom <json>]
+```
+
+At least one of `--name`, `--domain`, `--linkedin-id`, `--slug` is required.
+
+## Examples
+
+```bash
+# By domain
+lonescale companies search --domain stripe.com
+
+# By LinkedIn slug, with function-by-function headcount
+lonescale companies search --slug stripe --enrich
+
+# By name (partial match)
+lonescale companies search --name "Anthropic"
+
+# Attach custom passthrough metadata
+lonescale companies search --domain stripe.com \
+  --custom '{"campaign":"q2-pipeline","owner":"yann"}'
+```
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `--name <name>` | Company name (partial match). |
+| `--domain <domain>` | Company website domain. |
+| `--linkedin-id <id>` | LinkedIn company numeric ID. |
+| `--slug <slug>` | LinkedIn universal name — the slug from `linkedin.com/company/<slug>`. |
+| `--enrich` | Fall back to live LoneScale enrichment if the company isn't cached, and fetch the function-by-function headcount. |
+| `--custom <json>` | Flat key/value JSON object. Echoed unchanged at the top of the response — useful for joining results back to a row id in your CRM / spreadsheet. |
+
+Plus all [global options](/cli/overview#global-options).
+
+## Response shape
+
+```json
+{
+  "linkedinId": "stripe",
+  "linkedinUrl": "https://www.linkedin.com/company/stripe",
+  "name": "Stripe",
+  "domain": "stripe.com",
+  "industry": "Financial Services",
+  "staffCount": 8000,
+  "headcount": {
+    "engineering": 2400,
+    "sales": 600,
+    "marketing": 250
+  }
+}
+```
+
+Without `--enrich`, `headcount` is `null` for companies that haven't been previously enriched.
+
+<Card title="See the underlying endpoint" icon="link" href="/api-reference/endpoint/companies-search">
+  `GET /companies/search`
+</Card>
