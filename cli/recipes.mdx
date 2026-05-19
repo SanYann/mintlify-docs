@@ -1,0 +1,105 @@
+---
+title: "Recipes"
+icon: "book"
+---
+
+Real-world scripting patterns that combine the CLI commands. All examples assume `LONESCALE_API_KEY` is already exported (see [Overview → Authenticate](/cli/overview#authenticate)).
+
+## Fire and poll
+
+The async pattern, broken into two explicit steps:
+
+```bash
+JOB_ID=$(lonescale enrich --type email --contacts contacts.json --output minimal)
+echo "Started job $JOB_ID"
+lonescale result "$JOB_ID" --poll --output json > results.json
+```
+
+Or condensed into a single blocking call:
+
+```bash
+lonescale enrich --type email --contacts contacts.json --wait --output json > results.json
+```
+
+## Batch enrichment across multiple files
+
+```bash
+mkdir -p results
+for file in contacts/*.json; do
+  echo "Processing $file..."
+  lonescale enrich --type email --contacts "$file" --wait --output json \
+    > "results/$(basename "$file")"
+done
+```
+
+## Pipe sourcing → enrichment
+
+Source contacts at a company, then immediately enrich the LinkedIn URLs:
+
+```bash
+lonescale source --domain figma.com \
+  --personas-inline '[{"name":"Eng","job_titles":["engineering manager"]}]' \
+  --locations US --limit 10 --wait --output json \
+  | jq '[.contacts[] | { firstname, lastname, linkedin_url }]' \
+  | lonescale enrich --type email --wait --output json \
+  > figma-eng-emails.json
+```
+
+## Filter with `jq`
+
+```bash
+# Just the names + most probable email
+lonescale source --domain acme.com \
+  --personas-inline '[{"name":"Sales","job_titles":["VP Sales","Head of Sales"]}]' \
+  --wait --output json \
+  | jq '.contacts[] | { name: (.firstname + " " + .lastname), email: .most_probable_email }'
+```
+
+## Look up a list of companies
+
+```bash
+# domains.txt — one domain per line
+while read domain; do
+  lonescale companies search --domain "$domain" --output json
+done < domains.txt | jq -s '.'   # combine into a single JSON array
+```
+
+## Debug mode
+
+Pass `--debug` to print every HTTP request and response to stderr. API keys are redacted automatically.
+
+```
+$ lonescale enrich --type email --contacts c.json --debug --wait
+[DEBUG] POST https://public-api.lonescale.com/trigger/enrich
+[DEBUG] Body: { "enrichment_type": ["email"], "contacts": [...] }
+[DEBUG] Response: 200 { "id": "abc-123", "status": "..." }
+[INFO]  Job abc-123 started, polling...
+[DEBUG] GET https://public-api.lonescale.com/trigger/run/abc-123
+[DEBUG] Response: 200 { "status": "processing" }
+[DEBUG] GET https://public-api.lonescale.com/trigger/run/abc-123
+[DEBUG] Response: 200 { "status": "finished", "contacts": [...] }
+```
+
+Because logs go to stderr and data goes to stdout, you can debug a pipeline without polluting the JSON output:
+
+```bash
+lonescale enrich --type email --contacts c.json --debug --wait --output json 2> debug.log | jq '.contacts | length'
+```
+
+## CI / cron usage
+
+```yaml
+# Example: nightly enrichment in GitHub Actions
+- name: Enrich new leads
+  env:
+    LONESCALE_API_KEY: ${{ secrets.LONESCALE_API_KEY }}
+  run: |
+    npx -y @lonescale/cli enrich \
+      --type email,phone \
+      --contacts ./pipeline/new-leads.json \
+      --wait --output json > ./pipeline/enriched.json
+```
+
+<Card title="Need something else?" icon="envelope" href="mailto:happy@lonescale.com">
+  Tell us your use case at happy@lonescale.com.
+</Card>

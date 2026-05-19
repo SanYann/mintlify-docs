@@ -1,0 +1,74 @@
+---
+title: "lonescale enrich"
+icon: "wand-magic-sparkles"
+---
+
+Trigger waterfall enrichment (email and/or phone) for a list of contacts. By default the command is asynchronous — it returns a job ID immediately and you poll for results via [`lonescale result`](/cli/result), or pass `--wait` to have the CLI block until the job finishes.
+
+## Synopsis
+
+```bash
+lonescale enrich --type <types> [--contacts <file> | --contacts-inline <json>] [options]
+```
+
+## Examples
+
+```bash
+# From a JSON file, polling until done
+lonescale enrich --type email,phone --contacts contacts.json --wait
+
+# Inline JSON for a single contact
+lonescale enrich --type email --contacts-inline '[
+  { "firstname": "John", "lastname": "Doe", "domain": "acme.com" }
+]'
+
+# Sync mode (returns results directly, rate-limited to 5 req/min)
+lonescale enrich --type email --contacts contacts.json --sync
+
+# Pipe from stdin (any source that produces a JSON array of contacts)
+cat contacts.json | lonescale enrich --type email
+```
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `--type <types>` | **Required.** Comma-separated enrichment types: `email`, `phone`, or `email,phone`. |
+| `--contacts <file>` | Path to a JSON file containing the contacts array. |
+| `--contacts-inline <json>` | Inline JSON array (use when piping or scripting). |
+| `--custom <json>` | Custom metadata JSON, echoed back in the result and any webhook payload. |
+| `--wait` | Poll until the job completes. Default timeout is 120 s. |
+| `--sync` | Use the synchronous endpoint. Returns results inline but is rate-limited to 5 requests / minute. |
+| `--timeout <seconds>` | Override the `--wait` / `--sync` timeout (default 120). |
+
+Plus all [global options](/cli/overview#global-options) (`--api-key`, `--output`, `--debug`).
+
+## Contact schema
+
+```json
+[
+  {
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "john@acme.com",
+    "job_title": "CTO",
+    "linkedin_url": "https://linkedin.com/in/johndoe",
+    "domain": "acme.com",
+    "company_name": "Acme Inc"
+  }
+]
+```
+
+`firstname` and `lastname` are required. Every other field is optional — but more context means better match accuracy.
+
+## Async vs sync at a glance
+
+| Mode | When to use | Tradeoff |
+| --- | --- | --- |
+| **Async (default)** | Production workloads, batches > 5 contacts, anything you can poll | Returns a job ID; you poll `lonescale result <id>` or pass `--wait`. |
+| **Async + `--wait`** | Scripts that want a single blocking call | CLI does the polling for you. Hits the `--timeout` if the job takes longer. |
+| **Sync (`--sync`)** | Single-contact quick checks, exploration | 5 req/min hard rate limit per account; not for batches. |
+
+<Card title="See the underlying endpoints" icon="link" href="/api-reference/endpoint/create">
+  `POST /trigger/enrich` (async) and `POST /trigger/enrich/sync` (sync).
+</Card>

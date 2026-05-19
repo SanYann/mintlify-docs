@@ -24,6 +24,22 @@
         ]
       },
       {
+        "tab": "CLI",
+        "groups": [
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/overview",
+              "cli/enrich",
+              "cli/source",
+              "cli/companies-search",
+              "cli/result",
+              "cli/recipes"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "groups": [
           {

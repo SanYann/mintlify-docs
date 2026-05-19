@@ -1,0 +1,79 @@
+---
+title: "lonescale source"
+icon: "users"
+---
+
+Source contacts at a company by persona, seniority level, and location. Like [`enrich`](/cli/enrich), it is async by default — pass `--wait` to block until the job completes, or call [`lonescale result`](/cli/result) with the returned job ID.
+
+## Synopsis
+
+```bash
+lonescale source --domain <domain> [--personas <file> | --personas-inline <json>] [options]
+```
+
+## Examples
+
+```bash
+# Basic — VP+ at acme.com, all locations
+lonescale source --domain acme.com \
+  --personas-inline '[{"name":"Leadership","job_titles":["VP","Head","Director"]}]' \
+  --seniority vp,head,director \
+  --wait
+
+# Multi-filter with US/UK only, capped at 50 results
+lonescale source \
+  --domain acme.com \
+  --company-name "Acme Inc" \
+  --company-linkedin "https://linkedin.com/company/acme" \
+  --personas personas.json \
+  --locations US,GB \
+  --seniority c-suite,vp,director \
+  --limit 50 \
+  --wait
+```
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `--domain <domain>` | **Required.** Company website domain (e.g. `acme.com`). |
+| `--personas <file>` | Path to a JSON file with the personas array. |
+| `--personas-inline <json>` | Inline personas array. |
+| `--company-name <name>` | Company name. Helpful when the domain is ambiguous. |
+| `--company-linkedin <url>` | Company LinkedIn URL. Boosts accuracy by ~25 %. |
+| `--locations <codes>` | Comma-separated ISO country codes (see list below). |
+| `--seniority <levels>` | Comma-separated seniority levels (see list below). |
+| `--limit <n>` | Max contacts to return. |
+| `--disable-company-info` | Skip the company enrichment block in the response. |
+| `--custom <json>` | Custom metadata JSON, echoed back. |
+| `--wait` | Poll until the job completes (timeout 120 s by default). |
+| `--sync` | Use the synchronous endpoint (rate-limited to 5 req/min). |
+| `--timeout <seconds>` | Override the `--wait` / `--sync` timeout. |
+
+Plus all [global options](/cli/overview#global-options).
+
+## Persona schema
+
+```json
+[
+  {
+    "name": "Engineering Leaders",
+    "job_titles": ["CTO", "VP Engineering", "Head of Engineering"],
+    "exclude_job_titles": ["Junior", "Intern"]
+  }
+]
+```
+
+`job_titles` is matched as **partial / fuzzy** — `"VP Engineering"` will pick up `"VP, Engineering"` and `"VP of Engineering"`. Use `exclude_job_titles` to filter out look-alikes.
+
+## Allowed seniority levels
+
+`owner`, `founder`, `c-suite`, `partner`, `vp`, `head`, `director`, `manager`, `senior`, `entry`, `intern`
+
+## Allowed location codes
+
+`AT`, `AU`, `BE`, `CA`, `CH`, `DE`, `DK`, `ES`, `FI`, `FR`, `GB`, `IE`, `IL`, `IT`, `LU`, `NL`, `NO`, `PT`, `SE`, `US`
+
+<Card title="See the underlying endpoints" icon="link" href="/api-reference/endpoint/contact-sourcing">
+  `POST /trigger/source-contact` (async) and `POST /trigger/source-contact/sync` (sync).
+</Card>
