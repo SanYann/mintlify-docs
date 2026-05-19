@@ -1,0 +1,43 @@
+---
+title: "Overview"
+icon: "circle-info"
+---
+
+The **LoneScale MCP server** lets AI assistants (Claude, Cursor, ChatGPT, custom agents) call LoneScale's enrichment and sourcing capabilities as tools — directly from a chat, no glue code required.
+
+It implements the [Model Context Protocol](https://modelcontextprotocol.io) over Streamable HTTP and authenticates users via OAuth 2.0 with PKCE. Behind the scenes, every tool call uses the same LoneScale Public API documented elsewhere on this site.
+
+## Endpoint
+
+```
+https://mcp-enrich.lonescale.com/mcp
+```
+
+Transport: **Streamable HTTP** (MCP spec ≥ 2025-06-18).
+Auth: **OAuth 2.0** (user-consent flow — see [Connect to Claude](/mcp/connect)).
+
+## Available tools
+
+All four tools below are available once the user has authorized with their LoneScale API key.
+
+| Tool | Mode | Description |
+| --- | --- | --- |
+| `public-api-companies-search` | sync | Look up a company by name, domain, LinkedIn slug, or LinkedIn ID. Returns one fixed-shape company profile. |
+| `public-api-enrich` | async | Trigger waterfall enrichment (email and/or phone) for a list of contacts. Returns a `lonescale_job_id`. |
+| `public-api-contact-sourcing` | async | Source contacts at a company by persona, seniority, and location. Returns a `lonescale_job_id`. |
+| `get-job-result` | sync | Poll for results of an async job using its `lonescale_job_id`. Returns `pending` until status is `ready`. |
+
+Sync tools return results inline. Async tools return a job id immediately and the assistant must call `get-job-result` every few seconds until the status is `ready`.
+
+## What you'll need
+
+- A LoneScale account with an API key (Dashboard → Integrations → Public API).
+- A client that supports MCP custom connectors — for example [Claude](https://claude.ai), [Cursor](https://cursor.sh), or any agent built with the Anthropic SDK.
+
+<Card title="Connect to Claude" icon="plug" href="/mcp/connect">
+  Step-by-step setup, including the OAuth consent screen.
+</Card>
+
+<Card title="Examples" icon="sparkles" href="/mcp/examples">
+  Three concrete prompts you can copy-paste into Claude.
+</Card>

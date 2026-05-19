@@ -11,6 +11,19 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "MCP",
+        "groups": [
+          {
+            "group": "MCP",
+            "pages": [
+              "mcp/overview",
+              "mcp/connect",
+              "mcp/examples"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "groups": [
           {
