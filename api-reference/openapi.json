@@ -2023,11 +2023,23 @@
           },
           "email": {
             "type": "string",
-            "description": "The enriched email address."
+            "description": "The enriched email address. When no email is found via the provider waterfall, this falls back to a pattern-based predicted email (free)."
           },
           "emailStatus": {
             "type": "string",
-            "description": "The enriched email status."
+            "description": "The enriched email status: `valid`, `catch_all`, `invalid`, `unknown`, or `predicted`. `predicted` means the email was derived from the company's email pattern as a free fallback and was not verified."
+          },
+          "predicted_email": {
+            "type": "string",
+            "description": "Pattern-based predicted email, set when the provider waterfall returned no email. Free — does not consume credits."
+          },
+          "email_pattern": {
+            "type": "string",
+            "description": "Detected company email format used to build the predicted email, e.g. `firstname.lastname@domain`."
+          },
+          "predicted_email_score": {
+            "type": "string",
+            "description": "Confidence of the detected email pattern (percentage when detected, `0` for the deterministic fallback)."
           },
           "phone": {
             "type": "string",
@@ -2051,7 +2063,8 @@
                   "type": "string"
                 },
                 "status": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Email status: `valid`, `catch_all`, `invalid`, `unknown`, or `predicted` (free pattern-based fallback)."
                 }
               }
             }
