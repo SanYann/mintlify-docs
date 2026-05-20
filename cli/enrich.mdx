@@ -61,6 +61,10 @@ Plus all [global options](/cli/overview#global-options) (`--api-key`, `--output`
 
 `firstname` and `lastname` are required. Every other field is optional — but more context means better match accuracy.
 
+<Note>
+  **Predicted email fallback.** For `email` enrichment, if no provider returns an email, the result falls back to a pattern-based **predicted email** built from the contact's name and company `domain`. It is returned with `most_probable_email_status: "predicted"` (and an `emails[]` entry with the same status), alongside `predicted_email`, `email_pattern` (e.g. `firstname.lastname@domain`), and `predicted_email_score`. Predicted emails are **free** — they don't consume enrichment credits. Provide a `domain` to enable this fallback.
+</Note>
+
 ## Async vs sync at a glance
 
 | Mode | When to use | Tradeoff |
