@@ -42,6 +42,8 @@ Add **"and break headcount down by function"** to your prompt and Claude will se
 
 Enrichment is **waterfall** — LoneScale tries multiple providers and returns the first hit per contact. Most jobs finish in under 60 seconds.
 
+When no provider returns an email, the result falls back to a free **predicted email** built from the contact's name and company domain, flagged with `most_probable_email_status: "predicted"` and accompanied by `predicted_email`, `email_pattern`, and `predicted_email_score`. Predicted emails don't consume credits.
+
 ## 3. Source contacts at a company
 
 > _"Find 10 engineering managers at **figma.com** based in the US, and show me their LinkedIn URLs and current titles."_
