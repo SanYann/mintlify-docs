@@ -128,7 +128,7 @@
     },
     "/trigger/enrich/sync": {
       "post": {
-        "description": "Enrich contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "description": "Enrich contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -196,7 +196,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded — max 5 requests per minute",
+            "description": "Rate limit exceeded \u2014 max 5 requests per minute",
             "content": {
               "application/json": {
                 "schema": {
@@ -215,7 +215,7 @@
     },
     "/trigger/contact-sourcing/sync": {
       "post": {
-        "description": "Search contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "description": "Search contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -283,7 +283,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded — max 5 requests per minute",
+            "description": "Rate limit exceeded \u2014 max 5 requests per minute",
             "content": {
               "application/json": {
                 "schema": {
@@ -376,7 +376,10 @@
             "description": "Filter lists by entity type.",
             "schema": {
               "type": "string",
-              "enum": ["COMPANY", "PEOPLE"]
+              "enum": [
+                "COMPANY",
+                "PEOPLE"
+              ]
             }
           }
         ],
@@ -758,7 +761,7 @@
             }
           },
           "403": {
-            "description": "Validation failed — missing required fields for the list entity type",
+            "description": "Validation failed \u2014 missing required fields for the list entity type",
             "content": {
               "application/json": {
                 "schema": {
@@ -918,49 +921,66 @@
     },
     "/companies/search": {
       "get": {
-        "description": "Resolve a single company by domain, LinkedIn id, LinkedIn slug, or name and return a stable, fixed-shape result.\n\nAt least one of `domain`, `linkedin_id`, `slug`, or `name` is required. The response always returns the same set of fields — `null` (or `[]` for arrays) is used for any field we do not have data for, so client integrations can rely on a stable schema.\n\nWhen `enrich=true` and no cached match is found, the API will trigger an on-demand enrichment via data-sync; when `enrich=true` and a result has both a LinkedIn id and a universal name, a function-by-function headcount breakdown is also attached.\n\nThe optional `custom` map (e.g. `custom[crm_id]=abc-123`) is echoed back unchanged at the top level of the response — useful for correlating results with records on your side.\n\nRate limited to **5 requests per minute**.",
+        "description": "Resolve a single company by domain, LinkedIn id, LinkedIn slug, or name and return a stable, fixed-shape result.\n\nAt least one of `domain`, `linkedin_id`, `slug`, or `name` is required. The response always returns the same set of fields \u2014 `null` (or `[]` for arrays) is used for any field we do not have data for, so client integrations can rely on a stable schema.\n\nWhen `enrich=true` and no cached match is found, the API will trigger an on-demand enrichment via data-sync; when `enrich=true` and a result has both a LinkedIn id and a universal name, a function-by-function headcount breakdown is also attached.\n\nThe optional `custom` map (e.g. `custom[crm_id]=abc-123`) is echoed back unchanged at the top level of the response \u2014 useful for correlating results with records on your side.\n\nRate limited to **5 requests per minute**.",
         "parameters": [
           {
             "name": "domain",
             "in": "query",
             "required": false,
             "description": "Company domain (e.g. `stripe.com`). Schemes, `www.`, paths, and casing are normalized server-side.",
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           {
             "name": "linkedin_id",
             "in": "query",
             "required": false,
             "description": "Numeric LinkedIn company id (the digits in `linkedin.com/company/{id}`).",
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           {
             "name": "slug",
             "in": "query",
             "required": false,
             "description": "LinkedIn universal name / slug (the trailing segment in `linkedin.com/company/{slug}`).",
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           {
             "name": "name",
             "in": "query",
             "required": false,
-            "description": "Company name. Best-effort match — prefer `domain`, `linkedin_id`, or `slug` for deterministic resolution.",
-            "schema": { "type": "string", "minLength": 1 }
+            "description": "Company name. Best-effort match \u2014 prefer `domain`, `linkedin_id`, or `slug` for deterministic resolution.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           {
             "name": "enrich",
             "in": "query",
             "required": false,
             "description": "When `true`, fall back to on-demand enrichment if no cached match is found, and attach a `headcount` breakdown when possible. Defaults to `false`.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "custom",
             "in": "query",
             "required": false,
-            "description": "Arbitrary key/value passthrough echoed unchanged in the response — useful for correlating results with records on your side. Pass a **URL-encoded JSON object**, e.g. `custom=%7B%22crm_id%22%3A%22abc-123%22%2C%22priority%22%3A1%7D` (decodes to `{\"crm_id\":\"abc-123\",\"priority\":1}`). Only flat string/number values are kept — nested objects, arrays, booleans and null are dropped.",
-            "schema": { "type": "string" }
+            "description": "Arbitrary key/value passthrough echoed unchanged in the response \u2014 useful for correlating results with records on your side. Pass a **URL-encoded JSON object**, e.g. `custom=%7B%22crm_id%22%3A%22abc-123%22%2C%22priority%22%3A1%7D` (decodes to `{\"crm_id\":\"abc-123\",\"priority\":1}`). Only flat string/number values are kept \u2014 nested objects, arrays, booleans and null are dropped.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -968,15 +988,19 @@
             "description": "Search completed. `results` contains at most one company, or is empty when nothing matched.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CompanySearchResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/CompanySearchResponse"
+                }
               }
             }
           },
           "400": {
-            "description": "Invalid input — typically no filter provided, or an empty filter value.",
+            "description": "Invalid input \u2014 typically no filter provided, or an empty filter value.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
                 "example": {
                   "message": "at least one of name, domain, linkedin_id, slug is required",
                   "error": "Bad Request",
@@ -989,7 +1013,9 @@
             "description": "Invalid or missing authentication credentials",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" },
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
                 "example": {
                   "message": "Invalid API Key",
                   "error": "Unauthorized",
@@ -999,14 +1025,146 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded — max 5 requests per minute",
+            "description": "Rate limit exceeded \u2014 max 5 requests per minute",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
                 "example": {
                   "message": "ThrottlerException: Too Many Requests",
                   "error": "Too Many Requests",
                   "statusCode": 429
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trigger/crm-sync": {
+      "post": {
+        "description": "Push contacts and/or companies directly into your connected CRM. LoneScale creates or updates the records asynchronously, applying the team-level integration field mappings already configured in LoneScale (create/update fields and unicity criteria). No workflow is involved.\n\nRecord keys must match the LoneScale field keys referenced by your configured mappings (for example `lonescale_first_name`, `lonescale_company_domain`, or any custom key you mapped). Set `account_crm_id` on a record to target an existing CRM company by id instead of matching by unicity criteria.\n\nPoll `GET /trigger/crm-sync/{id}` with the returned `id`, or pass a `webhook_url` to be called once with the run summary when every record has been processed.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmSyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "CRM sync run accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmSyncRun"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ambiguous configuration: several CRMs (or several settings records) match; pass `crm` and/or `settings_type`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Multiple CRMs have mapping settings (hubspot, salesforce); pass \"crm\" to pick one",
+                  "error": "Conflict",
+                  "statusCode": 409
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "No mapping settings configured for the CRM, or empty payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "No hubspot integration mapping settings found; configure the hubspot integration in LoneScale first",
+                  "error": "Unprocessable Entity",
+                  "statusCode": 422
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trigger/crm-sync/{id}": {
+      "get": {
+        "description": "Get the status and progress counters of a CRM sync run.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The run id returned by POST /trigger/crm-sync"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmSyncRunStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Run not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Run not found",
+                  "error": "Not Found",
+                  "statusCode": 404
                 }
               }
             }
@@ -1303,31 +1461,81 @@
             "items": {
               "type": "object",
               "properties": {
-                "lonescale_full_name": { "type": "string" },
-                "lonescale_first_name": { "type": "string" },
-                "lonescale_last_name": { "type": "string" },
-                "lonescale_linkedin_url": { "type": "string" },
-                "lonescale_job_title": { "type": "string" },
-                "lonescale_job_seniority": { "type": "string" },
-                "lonescale_department": { "type": "string" },
-                "lonescale_country_code": { "type": "string" },
-                "lonescale_geo_country_name": { "type": "string" },
-                "lonescale_geo_location_name": { "type": "string" },
-                "lonescale_city": { "type": "string" },
-                "lonescale_company_name": { "type": "string" },
-                "lonescale_company_domain": { "type": "string" },
-                "lonescale_company_linkedin_url": { "type": "string" },
-                "lonescale_company_linkedin_id": { "type": "string" },
-                "lonescale_universal_name": { "type": "string" },
-                "lonescale_company_industry": { "type": "string" },
-                "lonescale_company_country": { "type": "string" },
-                "lonescale_company_country_code": { "type": "string" },
-                "lonescale_company_staff_count": { "type": "integer" },
-                "lonescale_company_employee_range": { "type": "string" },
-                "lonescale_company_city": { "type": "string" },
-                "client_company_name": { "type": "string" },
-                "client_company_domain": { "type": "string" },
-                "client_company_linkedin_url": { "type": "string" },
+                "lonescale_full_name": {
+                  "type": "string"
+                },
+                "lonescale_first_name": {
+                  "type": "string"
+                },
+                "lonescale_last_name": {
+                  "type": "string"
+                },
+                "lonescale_linkedin_url": {
+                  "type": "string"
+                },
+                "lonescale_job_title": {
+                  "type": "string"
+                },
+                "lonescale_job_seniority": {
+                  "type": "string"
+                },
+                "lonescale_department": {
+                  "type": "string"
+                },
+                "lonescale_country_code": {
+                  "type": "string"
+                },
+                "lonescale_geo_country_name": {
+                  "type": "string"
+                },
+                "lonescale_geo_location_name": {
+                  "type": "string"
+                },
+                "lonescale_city": {
+                  "type": "string"
+                },
+                "lonescale_company_name": {
+                  "type": "string"
+                },
+                "lonescale_company_domain": {
+                  "type": "string"
+                },
+                "lonescale_company_linkedin_url": {
+                  "type": "string"
+                },
+                "lonescale_company_linkedin_id": {
+                  "type": "string"
+                },
+                "lonescale_universal_name": {
+                  "type": "string"
+                },
+                "lonescale_company_industry": {
+                  "type": "string"
+                },
+                "lonescale_company_country": {
+                  "type": "string"
+                },
+                "lonescale_company_country_code": {
+                  "type": "string"
+                },
+                "lonescale_company_staff_count": {
+                  "type": "integer"
+                },
+                "lonescale_company_employee_range": {
+                  "type": "string"
+                },
+                "lonescale_company_city": {
+                  "type": "string"
+                },
+                "client_company_name": {
+                  "type": "string"
+                },
+                "client_company_domain": {
+                  "type": "string"
+                },
+                "client_company_linkedin_url": {
+                  "type": "string"
+                },
                 "custom": {
                   "type": "object",
                   "additionalProperties": true,
@@ -2031,7 +2239,7 @@
           },
           "predicted_email": {
             "type": "string",
-            "description": "Pattern-based predicted email, set when the provider waterfall returned no email. Free — does not consume credits."
+            "description": "Pattern-based predicted email, set when the provider waterfall returned no email. Free \u2014 does not consume credits."
           },
           "email_pattern": {
             "type": "string",
@@ -2086,7 +2294,7 @@
           },
           "jobChangeDetected": {
             "type": "boolean",
-            "description": "Indicates whether the contact has changed company since the input data was provided.\n\n- `true` — the enriched company (domain or name) differs from the one in the input contact\n- `false` — the company is the same, or there is not enough data to determine a change\n\nOnly present in the webhook payload when `detect_job_change: true` was set in the request. Detection first compares company domains using fuzzy matching, falling back to company name if domains are unavailable."
+            "description": "Indicates whether the contact has changed company since the input data was provided.\n\n- `true` \u2014 the enriched company (domain or name) differs from the one in the input contact\n- `false` \u2014 the company is the same, or there is not enough data to determine a change\n\nOnly present in the webhook payload when `detect_job_change: true` was set in the request. Detection first compares company domains using fuzzy matching, falling back to company name if domains are unavailable."
           }
         }
       },
@@ -2192,7 +2400,10 @@
           },
           "entity": {
             "type": "string",
-            "enum": ["COMPANY", "PEOPLE"],
+            "enum": [
+              "COMPANY",
+              "PEOPLE"
+            ],
             "description": "The entity type of the list."
           },
           "description": {
@@ -2268,7 +2479,10 @@
       },
       "CreateListRequest": {
         "type": "object",
-        "required": ["name", "entity"],
+        "required": [
+          "name",
+          "entity"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -2276,7 +2490,10 @@
           },
           "entity": {
             "type": "string",
-            "enum": ["COMPANY", "PEOPLE"],
+            "enum": [
+              "COMPANY",
+              "PEOPLE"
+            ],
             "description": "Entity type the list will hold."
           }
         },
@@ -2330,12 +2547,18 @@
       },
       "CompanySearchResponse": {
         "type": "object",
-        "required": ["results", "count", "custom"],
+        "required": [
+          "results",
+          "count",
+          "custom"
+        ],
         "properties": {
           "results": {
             "type": "array",
             "description": "At most one matching company. Empty when nothing was found.",
-            "items": { "$ref": "#/components/schemas/CompanySearchResult" }
+            "items": {
+              "$ref": "#/components/schemas/CompanySearchResult"
+            }
           },
           "count": {
             "type": "integer",
@@ -2347,17 +2570,24 @@
             "description": "The `custom` map from the request, echoed unchanged. `{}` when none was sent.",
             "additionalProperties": {
               "oneOf": [
-                { "type": "string" },
-                { "type": "number" }
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
               ]
             },
-            "example": { "crm_id": "abc-123", "priority": "1" }
+            "example": {
+              "crm_id": "abc-123",
+              "priority": "1"
+            }
           }
         }
       },
       "CompanySearchResult": {
         "type": "object",
-        "description": "Stable, fixed-shape company hit. Every field is always present — `null` (or `[]`) is used for any datum we do not have.",
+        "description": "Stable, fixed-shape company hit. Every field is always present \u2014 `null` (or `[]`) is used for any datum we do not have.",
         "required": [
           "linkedinId",
           "linkedinUniversalName",
@@ -2382,64 +2612,193 @@
           "headcount"
         ],
         "properties": {
-          "linkedinId": { "type": ["string", "null"], "example": "2135371" },
-          "linkedinUniversalName": { "type": ["string", "null"], "example": "stripe" },
-          "linkedinUrl": { "type": ["string", "null"], "example": "https://www.linkedin.com/company/stripe" },
-          "name": { "type": ["string", "null"], "example": "Stripe" },
-          "domain": { "type": ["string", "null"], "example": "stripe.com" },
-          "websiteUrl": { "type": ["string", "null"], "example": "https://stripe.com" },
-          "logoUrl": { "type": ["string", "null"] },
-          "description": { "type": ["string", "null"] },
-          "linkedinTagline": { "type": ["string", "null"], "example": "Help increase the GDP of the internet." },
-          "industry": { "type": ["string", "null"], "example": "Computer Software" },
-          "foundedYear": { "type": ["integer", "null"], "example": 2010 },
-          "staffCount": { "type": ["integer", "null"], "example": 13809 },
-          "staffCountRange": {
-            "type": ["object", "null"],
-            "properties": {
-              "start": { "type": "integer" },
-              "end": { "type": "integer" }
-            },
-            "example": { "start": 5001, "end": 10000 }
+          "linkedinId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2135371"
           },
-          "countryCode": { "type": ["string", "null"], "example": "US" },
-          "city": { "type": ["string", "null"], "example": "South San Francisco" },
-          "postalCode": { "type": ["string", "null"], "example": "94080" },
+          "linkedinUniversalName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "stripe"
+          },
+          "linkedinUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://www.linkedin.com/company/stripe"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Stripe"
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "stripe.com"
+          },
+          "websiteUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://stripe.com"
+          },
+          "logoUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkedinTagline": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Help increase the GDP of the internet."
+          },
+          "industry": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Computer Software"
+          },
+          "foundedYear": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 2010
+          },
+          "staffCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 13809
+          },
+          "staffCountRange": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "start": {
+                "type": "integer"
+              },
+              "end": {
+                "type": "integer"
+              }
+            },
+            "example": {
+              "start": 5001,
+              "end": 10000
+            }
+          },
+          "countryCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "US"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "South San Francisco"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "94080"
+          },
           "linkedinSpecialities": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "linkedinHashtags": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "confirmedLocations": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "country": { "type": "string" },
-                "geographicArea": { "type": "string" },
-                "city": { "type": "string" },
-                "postalCode": { "type": "string" },
-                "line1": { "type": "string" },
-                "headquarter": { "type": "boolean" }
+                "country": {
+                  "type": "string"
+                },
+                "geographicArea": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "postalCode": {
+                  "type": "string"
+                },
+                "line1": {
+                  "type": "string"
+                },
+                "headquarter": {
+                  "type": "boolean"
+                }
               }
             }
           },
           "fundingData": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "description": "Crunchbase-derived funding info when available."
           },
           "headcount": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "description": "Function-by-function employee breakdown. Only populated when `enrich=true` AND the result has both `linkedinId` and `linkedinUniversalName`.",
             "items": {
               "type": "object",
-              "required": ["function", "count"],
+              "required": [
+                "function",
+                "count"
+              ],
               "properties": {
-                "function": { "type": "string", "example": "Engineering" },
-                "count": { "type": "integer", "example": 5058 }
+                "function": {
+                  "type": "string",
+                  "example": "Engineering"
+                },
+                "count": {
+                  "type": "integer",
+                  "example": 5058
+                }
               }
             }
           }
@@ -2464,6 +2823,113 @@
           "statusCode": {
             "type": "integer",
             "example": 401
+          }
+        }
+      },
+      "CrmSyncRecord": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings.",
+        "properties": {
+          "account_crm_id": {
+            "type": "string",
+            "description": "Optional CRM company id: targets that company directly instead of matching by unicity criteria."
+          }
+        }
+      },
+      "CrmSyncRequest": {
+        "type": "object",
+        "properties": {
+          "crm": {
+            "type": "string",
+            "enum": [
+              "hubspot",
+              "salesforce",
+              "pipedrive",
+              "sellsy"
+            ],
+            "description": "Target CRM. Required only when more than one connected CRM has mapping settings."
+          },
+          "settings_type": {
+            "type": "string",
+            "description": "Which team-level settings record to sync with when several exist (settings are stored per use-case: contact_sourcing, job_changes, ...). Defaults to the contact_sourcing record, or the only existing record."
+          },
+          "contacts": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/CrmSyncRecord"
+            },
+            "description": "Contacts to create/update (company fields may be embedded on each contact)."
+          },
+          "companies": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/CrmSyncRecord"
+            },
+            "description": "Companies to create/update, without contacts."
+          },
+          "webhook_url": {
+            "type": "string",
+            "description": "Called once with the run summary when every record has been processed."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Reuse the same key to make client retries return the existing run instead of double-writing."
+          },
+          "trigger_by": {
+            "type": "string"
+          }
+        }
+      },
+      "CrmSyncRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Run id, used to poll the status endpoint"
+          },
+          "status": {
+            "type": "string",
+            "example": "processing"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "records_received": {
+            "type": "integer"
+          },
+          "crm": {
+            "type": "string",
+            "example": "hubspot"
+          }
+        }
+      },
+      "CrmSyncRunStatus": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "finished"
+            ]
+          },
+          "total": {
+            "type": "integer"
+          },
+          "processed": {
+            "type": "integer",
+            "description": "Records synced successfully"
+          },
+          "failed": {
+            "type": "integer",
+            "description": "Records that failed after retries"
           }
         }
       }
