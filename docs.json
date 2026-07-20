@@ -69,7 +69,8 @@
             "group": "CRM Sync",
             "pages": [
               "api-reference/endpoint/crm-sync",
-              "api-reference/endpoint/crm-sync-status"
+              "api-reference/endpoint/crm-sync-status",
+              "api-reference/endpoint/crm-sync-records"
             ]
           },
           {

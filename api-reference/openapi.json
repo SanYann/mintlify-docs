@@ -1171,6 +1171,64 @@
           }
         }
       }
+    },
+    "/trigger/crm-sync/{id}/records": {
+      "get": {
+        "description": "Delivery log of a CRM sync run: one entry per record with its final status (`synced` / `failed` / `pending`), the CRM ids created or updated, the error message when it failed and the number of attempts. Records not consumed yet (run still processing) are reported as `pending`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The run id returned by POST /trigger/crm-sync"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-record delivery log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmSyncRunRecords"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Run not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Run not found",
+                  "error": "Not Found",
+                  "statusCode": 404
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2930,6 +2988,84 @@
           "failed": {
             "type": "integer",
             "description": "Records that failed after retries"
+          },
+          "errors_sample": {
+            "type": "array",
+            "description": "First few failed records (present only when failed > 0)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CrmSyncRecordStatus": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "description": "Position of the record in the submitted payload (contacts first, then companies)"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "company"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "synced",
+              "failed",
+              "pending"
+            ]
+          },
+          "error": {
+            "type": "string",
+            "description": "Present when status is failed"
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "crm_contact_id": {
+            "type": "string",
+            "description": "CRM id of the contact created/updated"
+          },
+          "crm_company_id": {
+            "type": "string",
+            "description": "CRM id of the company created/updated"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CrmSyncRunRecords": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmSyncRecordStatus"
+            }
           }
         }
       }
