@@ -2910,7 +2910,7 @@
           },
           "settings_type": {
             "type": "string",
-            "description": "Which team-level settings record to sync with when several exist (settings are stored per use-case: contact_sourcing, job_changes, ...). Defaults to the contact_sourcing record, or the only existing record."
+            "description": "Which team-level settings record to sync with when several exist for the CRM (settings are stored per use-case: api_sync, contact_sourcing, job_changes, ...). When omitted, resolution prefers the dedicated `api_sync` record (configured in the \"API Sync\" tab of the CRM integration), then falls back to `contact_sourcing`, then the only existing record."
           },
           "contacts": {
             "type": "array",
