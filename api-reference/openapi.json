@@ -1229,6 +1229,95 @@
           }
         }
       }
+    },
+    "/crm/search": {
+      "post": {
+        "description": "Look up a contact in your connected CRM(s) and surface the record owner. Provide `email` and/or `linkedin_url`. Only connected CRMs are queried. Pipedrive and Sellsy search is email-only, so a linkedin-only lookup returns HubSpot/Salesforce matches only.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "CRM matches with owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmSearchResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Neither email nor linkedin_url provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "email or linkedin_url is required",
+                  "error": "Unprocessable Entity",
+                  "statusCode": 422
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "description": "List the platform webhooks configured for your team, so you can pass a `webhook_id` destination to `POST /trigger/crm-sync` (push records without a connected CRM). Deduped by URL.",
+        "responses": {
+          "200": {
+            "description": "Configured webhooks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2932,12 +3021,96 @@
             "type": "string",
             "description": "Called once with the run summary when every record has been processed."
           },
+          "webhook_id": {
+            "type": "string",
+            "description": "Deliver every record to this platform webhook (id from `GET /webhooks`) instead of a CRM. No CRM connection or mapping is required. Mutually exclusive with `crm` / `settings_type`; distinct from `webhook_url` (the completion callback)."
+          },
           "idempotency_key": {
             "type": "string",
             "description": "Reuse the same key to make client retries return the existing run instead of double-writing."
           },
           "trigger_by": {
             "type": "string"
+          }
+        }
+      },
+      "CrmSearchRequest": {
+        "type": "object",
+        "description": "At least one of `email` / `linkedin_url` is required.",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email to look up in the connected CRM(s)."
+          },
+          "linkedin_url": {
+            "type": "string",
+            "description": "LinkedIn profile URL to look up. HubSpot/Salesforce only."
+          },
+          "crm": {
+            "type": "string",
+            "enum": [
+              "hubspot",
+              "salesforce",
+              "pipedrive",
+              "sellsy"
+            ],
+            "description": "Restrict the search to a single CRM instead of all connected ones."
+          }
+        }
+      },
+      "CrmContactMatch": {
+        "type": "object",
+        "properties": {
+          "crm": {
+            "type": "string",
+            "enum": [
+              "hubspot",
+              "salesforce",
+              "pipedrive",
+              "sellsy"
+            ]
+          },
+          "id": { "type": "string", "description": "CRM record id" },
+          "name": { "type": "string", "nullable": true },
+          "email": { "type": "string", "nullable": true },
+          "title": { "type": "string", "nullable": true },
+          "profileUrl": { "type": "string", "nullable": true, "description": "LinkedIn URL stored on the record" },
+          "url": { "type": "string", "nullable": true, "description": "Link to the CRM record" },
+          "company": { "type": "string", "nullable": true },
+          "companyDomain": { "type": "string", "nullable": true },
+          "ownerId": { "type": "string", "nullable": true, "description": "CRM owner id" },
+          "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" }
+        }
+      },
+      "CrmSearchResult": {
+        "type": "object",
+        "properties": {
+          "matches": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmContactMatch" }
+          },
+          "searched_crms": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "The connected CRMs actually queried."
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Pass as `webhook_id` to POST /trigger/crm-sync" },
+          "name": { "type": "string", "nullable": true },
+          "url": { "type": "string" },
+          "status": { "type": "string", "nullable": true }
+        }
+      },
+      "WebhookList": {
+        "type": "object",
+        "properties": {
+          "webhooks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Webhook" }
           }
         }
       },
