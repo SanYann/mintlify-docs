@@ -2981,6 +2981,10 @@
           "account_crm_id": {
             "type": "string",
             "description": "Optional CRM company id: targets that company directly instead of matching by unicity criteria."
+          },
+          "contact_crm_id": {
+            "type": "string",
+            "description": "Optional CRM contact id (e.g. the id returned by POST /crm/search): updates that exact contact instead of matching by unicity criteria."
           }
         }
       },
