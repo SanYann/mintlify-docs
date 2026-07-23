@@ -3040,7 +3040,7 @@
       },
       "CrmSearchRequest": {
         "type": "object",
-        "description": "At least one of `email` / `linkedin_url` is required.",
+        "description": "Provide `email`, `linkedin_url`, or a name (`first_name`/`last_name`) together with `company_domain` or `company_name`. A name is never searched unconstrained.",
         "properties": {
           "email": {
             "type": "string",
@@ -3049,6 +3049,19 @@
           "linkedin_url": {
             "type": "string",
             "description": "LinkedIn profile URL to look up. HubSpot/Salesforce only."
+          },
+          "first_name": {
+            "type": "string",
+            "description": "Used with `last_name` + a company when no email/LinkedIn is available. Matches are fuzzier and reported with a lower `confidence`."
+          },
+          "last_name": { "type": "string" },
+          "company_domain": {
+            "type": "string",
+            "description": "Constrains a name search to that company. Preferred over `company_name` (more precise)."
+          },
+          "company_name": {
+            "type": "string",
+            "description": "Fallback company constraint when no domain is known. Yields `confidence: low`."
           },
           "crm": {
             "type": "string",
@@ -3085,7 +3098,8 @@
           "ownerId": { "type": "string", "nullable": true, "description": "CRM owner id" },
           "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" },
           "matchedEmail": { "type": "string", "nullable": true, "description": "The address that actually matched. HubSpot's contact search also matches secondary addresses, so the record's primary `email` can differ from the one you searched." },
-          "matchedOn": { "type": "string", "nullable": true, "enum": ["primary_email", "secondary_email", "linkedin"], "description": "Which identifier produced the match." }
+          "matchedOn": { "type": "string", "nullable": true, "enum": ["primary_email", "secondary_email", "linkedin", "unicity_criteria", "name_company_id", "name_company_name"], "description": "Which identifier produced the match. `unicity_criteria` means the team's own CRM unicity rules matched (the same rule crm-sync applies)." },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting." }
         }
       },
       "CrmSearchResult": {
