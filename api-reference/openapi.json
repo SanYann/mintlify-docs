@@ -3083,7 +3083,9 @@
           "company": { "type": "string", "nullable": true },
           "companyDomain": { "type": "string", "nullable": true },
           "ownerId": { "type": "string", "nullable": true, "description": "CRM owner id" },
-          "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" }
+          "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" },
+          "matchedEmail": { "type": "string", "nullable": true, "description": "The address that actually matched. HubSpot's contact search also matches secondary addresses, so the record's primary `email` can differ from the one you searched." },
+          "matchedOn": { "type": "string", "nullable": true, "enum": ["primary_email", "secondary_email", "linkedin"], "description": "Which identifier produced the match." }
         }
       },
       "CrmSearchResult": {
@@ -3097,6 +3099,17 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "The connected CRMs actually queried."
+          },
+          "errors": {
+            "type": "array",
+            "description": "Per-CRM lookup failures. Present only when a provider errored. IMPORTANT: an empty `matches` alongside `errors` is NOT a confirmed \"no match\" — do not treat it as \"contact is new\".",
+            "items": {
+              "type": "object",
+              "properties": {
+                "crm": { "type": "string" },
+                "error": { "type": "string" }
+              }
+            }
           }
         }
       },
