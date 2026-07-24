@@ -70,7 +70,15 @@
             "pages": [
               "api-reference/endpoint/crm-sync",
               "api-reference/endpoint/crm-sync-status",
-              "api-reference/endpoint/crm-sync-records"
+              "api-reference/endpoint/crm-sync-records",
+              "api-reference/endpoint/crm-search",
+              "api-reference/endpoint/crm-mapping"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/endpoint/webhooks-list"
             ]
           },
           {

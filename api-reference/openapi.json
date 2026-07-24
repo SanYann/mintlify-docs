@@ -1229,6 +1229,150 @@
           }
         }
       }
+    },
+    "/crm/search": {
+      "post": {
+        "description": "Look up a contact in your connected CRM(s) and surface the record owner. Provide `email` and/or `linkedin_url`. Only connected CRMs are queried. Pipedrive and Sellsy search is email-only, so a linkedin-only lookup returns HubSpot/Salesforce matches only.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "CRM matches with owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmSearchResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Neither email nor linkedin_url provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "email or linkedin_url is required",
+                  "error": "Unprocessable Entity",
+                  "statusCode": 422
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/crm/mapping": {
+      "get": {
+        "description": "Preview which CRM fields a `POST /trigger/crm-sync` will write: the team's resolved contact/company create & update field mappings, the unicity criteria used for matching, and whether creation is enabled. Read-only.",
+        "parameters": [
+          {
+            "name": "crm",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["hubspot", "salesforce", "pipedrive", "sellsy"] },
+            "description": "Target CRM. Optional when only one CRM has mapping settings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolved mapping preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "crm": { "type": "string" },
+                    "settings_type": { "type": "string" },
+                    "contact": {
+                      "type": "object",
+                      "properties": {
+                        "create_enabled": { "type": "boolean" },
+                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "unicity": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+                      }
+                    },
+                    "company": {
+                      "type": "object",
+                      "properties": {
+                        "create_enabled": { "type": "boolean" },
+                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Several CRMs have mapping settings; pass `crm`",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "422": {
+            "description": "No CRM mapping settings configured",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "description": "List the platform webhooks configured for your team, so you can pass a `webhook_id` destination to `POST /trigger/crm-sync` (push records without a connected CRM). Deduped by URL.",
+        "responses": {
+          "200": {
+            "description": "Configured webhooks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2887,11 +3031,15 @@
       "CrmSyncRecord": {
         "type": "object",
         "additionalProperties": true,
-        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings.",
+        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings. Profile/company fields use the `lonescale_` prefix (`lonescale_first_name`, `lonescale_job_title`, `lonescale_company_domain`, ...) but contact details do NOT: use `main_email`, `main_email_status`, `main_phone`, `main_phone_region`. camelCase keys from enrich payloads (`firstName`, `jobTitle`, `email`, `phone`, ...) are automatically aliased to the right field keys.",
         "properties": {
           "account_crm_id": {
             "type": "string",
             "description": "Optional CRM company id: targets that company directly instead of matching by unicity criteria."
+          },
+          "contact_crm_id": {
+            "type": "string",
+            "description": "Optional CRM contact id (e.g. the id returned by POST /crm/search): updates that exact contact instead of matching by unicity criteria."
           }
         }
       },
@@ -2932,12 +3080,128 @@
             "type": "string",
             "description": "Called once with the run summary when every record has been processed."
           },
+          "webhook_id": {
+            "type": "string",
+            "description": "Deliver every record to this platform webhook (id from `GET /webhooks`) instead of a CRM. No CRM connection or mapping is required. Mutually exclusive with `crm` / `settings_type`; distinct from `webhook_url` (the completion callback)."
+          },
           "idempotency_key": {
             "type": "string",
             "description": "Reuse the same key to make client retries return the existing run instead of double-writing."
           },
           "trigger_by": {
             "type": "string"
+          }
+        }
+      },
+      "CrmSearchRequest": {
+        "type": "object",
+        "description": "Provide `email`, `linkedin_url`, or a name (`first_name`/`last_name`) together with `company_domain` or `company_name`. A name is never searched unconstrained.",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email to look up in the connected CRM(s)."
+          },
+          "linkedin_url": {
+            "type": "string",
+            "description": "LinkedIn profile URL to look up. HubSpot/Salesforce only."
+          },
+          "first_name": {
+            "type": "string",
+            "description": "Used with `last_name` + a company when no email/LinkedIn is available. Matches are fuzzier and reported with a lower `confidence`."
+          },
+          "last_name": { "type": "string" },
+          "company_domain": {
+            "type": "string",
+            "description": "Constrains a name search to that company. Preferred over `company_name` (more precise)."
+          },
+          "company_name": {
+            "type": "string",
+            "description": "Fallback company constraint when no domain is known. Yields `confidence: low`."
+          },
+          "crm": {
+            "type": "string",
+            "enum": [
+              "hubspot",
+              "salesforce",
+              "pipedrive",
+              "sellsy"
+            ],
+            "description": "Restrict the search to a single CRM instead of all connected ones."
+          }
+        }
+      },
+      "CrmContactMatch": {
+        "type": "object",
+        "properties": {
+          "crm": {
+            "type": "string",
+            "enum": [
+              "hubspot",
+              "salesforce",
+              "pipedrive",
+              "sellsy"
+            ]
+          },
+          "id": { "type": "string", "description": "CRM record id" },
+          "name": { "type": "string", "nullable": true },
+          "email": { "type": "string", "nullable": true },
+          "title": { "type": "string", "nullable": true },
+          "profileUrl": { "type": "string", "nullable": true, "description": "LinkedIn URL stored on the record" },
+          "url": { "type": "string", "nullable": true, "description": "Link to the CRM record" },
+          "company": { "type": "string", "nullable": true },
+          "companyDomain": { "type": "string", "nullable": true },
+          "ownerId": { "type": "string", "nullable": true, "description": "CRM owner id" },
+          "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" },
+          "matchedEmail": { "type": "string", "nullable": true, "description": "The address that actually matched. HubSpot's contact search also matches secondary addresses, so the record's primary `email` can differ from the one you searched." },
+          "matchedOn": { "type": "string", "nullable": true, "enum": ["primary_email", "secondary_email", "linkedin", "unicity_criteria", "name_company_id", "name_company_name"], "description": "Which identifier produced the match. `unicity_criteria` means the team's own CRM unicity rules matched (the same rule crm-sync applies)." },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting." }
+        }
+      },
+      "CrmSearchResult": {
+        "type": "object",
+        "properties": {
+          "matches": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmContactMatch" }
+          },
+          "searched_crms": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "The connected CRMs actually queried."
+          },
+          "default_crm": {
+            "type": "string",
+            "nullable": true,
+            "description": "The CRM a `crm`-less sync would resolve to (same rules as POST /trigger/crm-sync). Null when ambiguous: ask the user which CRM to act on."
+          },
+          "errors": {
+            "type": "array",
+            "description": "Per-CRM lookup failures. Present only when a provider errored. IMPORTANT: an empty `matches` alongside `errors` is NOT a confirmed \"no match\" — do not treat it as \"contact is new\".",
+            "items": {
+              "type": "object",
+              "properties": {
+                "crm": { "type": "string" },
+                "error": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Pass as `webhook_id` to POST /trigger/crm-sync" },
+          "name": { "type": "string", "nullable": true },
+          "url": { "type": "string" },
+          "status": { "type": "string", "nullable": true }
+        }
+      },
+      "WebhookList": {
+        "type": "object",
+        "properties": {
+          "webhooks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Webhook" }
           }
         }
       },
@@ -2975,8 +3239,11 @@
             "type": "string",
             "enum": [
               "processing",
-              "finished"
-            ]
+              "finished",
+              "partial",
+              "failed"
+            ],
+            "description": "Terminal values name the outcome: `finished` = all records synced, `partial` = some failed, `failed` = every record failed. Treat all three as terminal when polling — not only `finished`. The completion webhook carries the same `status` plus `errors_sample`."
           },
           "total": {
             "type": "integer"
