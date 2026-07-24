@@ -3179,8 +3179,11 @@
             "type": "string",
             "enum": [
               "processing",
-              "finished"
-            ]
+              "finished",
+              "partial",
+              "failed"
+            ],
+            "description": "Terminal values name the outcome: `finished` = all records synced, `partial` = some failed, `failed` = every record failed. Treat all three as terminal when polling — not only `finished`. The completion webhook carries the same `status` plus `errors_sample`."
           },
           "total": {
             "type": "integer"
