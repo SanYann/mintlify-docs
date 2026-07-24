@@ -1287,6 +1287,61 @@
         }
       }
     },
+    "/crm/mapping": {
+      "get": {
+        "description": "Preview which CRM fields a `POST /trigger/crm-sync` will write: the team's resolved contact/company create & update field mappings, the unicity criteria used for matching, and whether creation is enabled. Read-only.",
+        "parameters": [
+          {
+            "name": "crm",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["hubspot", "salesforce", "pipedrive", "sellsy"] },
+            "description": "Target CRM. Optional when only one CRM has mapping settings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolved mapping preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "crm": { "type": "string" },
+                    "settings_type": { "type": "string" },
+                    "contact": {
+                      "type": "object",
+                      "properties": {
+                        "create_enabled": { "type": "boolean" },
+                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "unicity": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+                      }
+                    },
+                    "company": {
+                      "type": "object",
+                      "properties": {
+                        "create_enabled": { "type": "boolean" },
+                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Several CRMs have mapping settings; pass `crm`",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "422": {
+            "description": "No CRM mapping settings configured",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
     "/webhooks": {
       "get": {
         "description": "List the platform webhooks configured for your team, so you can pass a `webhook_id` destination to `POST /trigger/crm-sync` (push records without a connected CRM). Deduped by URL.",
@@ -3113,6 +3168,11 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "The connected CRMs actually queried."
+          },
+          "default_crm": {
+            "type": "string",
+            "nullable": true,
+            "description": "The CRM a `crm`-less sync would resolve to (same rules as POST /trigger/crm-sync). Null when ambiguous: ask the user which CRM to act on."
           },
           "errors": {
             "type": "array",
