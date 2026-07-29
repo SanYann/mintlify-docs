@@ -1875,11 +1875,8 @@
       },
       "Contact": {
         "type": "object",
+        "description": "A contact must carry at least one identifier: `linkedin_url`, or `firstname` + `lastname` + (`domain` or `company_name`), or `email` alone. Anything else cannot be resolved and comes back with `status: \"failed\"`.",
         "additionalProperties": false,
-        "required": [
-          "firstname",
-          "lastname"
-        ],
         "properties": {
           "firstname": {
             "type": "string"
@@ -1889,7 +1886,9 @@
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Known email of the contact. Also usable as a standalone identifier: sent alone (with `enrichment_type` including `profile`), it resolves the person's identity — name, LinkedIn URL, job title and company.",
+            "example": "john@acme.com"
           },
           "job_title": {
             "type": "string"
