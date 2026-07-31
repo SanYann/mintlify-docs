@@ -128,7 +128,7 @@
     },
     "/trigger/enrich/sync": {
       "post": {
-        "description": "Enrich contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "description": "Enrich contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute, counted per API key** \u2014 contact us if your integration needs a higher limit, it can be raised per account.",
         "requestBody": {
           "content": {
             "application/json": {
