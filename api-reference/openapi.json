@@ -2368,6 +2368,11 @@
             "type": "string",
             "description": "The enriched job title."
           },
+          "location": {
+            "type": "string",
+            "description": "Where the contact is based, as reported on their profile. Omitted when the provider has no location.",
+            "example": "Madrid, Community of Madrid, Spain"
+          },
           "companyDescription": {
             "type": "string",
             "description": "The enriched company description."
