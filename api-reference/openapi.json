@@ -1809,6 +1809,14 @@
               "$ref": "#/components/schemas/CountryCode"
             }
           },
+          "included_cities": {
+            "type": "array",
+            "description": "List of city names to filter contacts by. Unlike `included_locations`, cities are not used as a search filter: contacts are sourced first, then only those whose location contains one of these cities are returned. City spelling is revalidated against `included_locations`, so both local and English spellings work (`Bruxelles` / `Brussels`, `Zürich` / `Zurich`), and combining `included_cities: [\"Paris\"]` with `included_locations: [\"FR\"]` excludes Paris, Texas. A contact whose city cannot be determined is not returned.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Paris", "Lyon"]
+          },
           "limit": {
             "type": "number",
             "description": "Defines the maximum number of contacts to retrieve"
