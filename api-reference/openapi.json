@@ -1459,6 +1459,10 @@
           "detect_job_change": {
             "type": "boolean",
             "description": "When `true`, the webhook response will include a `jobChangeDetected` field indicating whether the contact has changed company since the input data was provided.\n\nOnly effective when `enrichment_type` includes `\"profile\"` and `webhook_url` is provided."
+          },
+          "force_refresh": {
+            "type": "boolean",
+            "description": "Opt out of the 24h enrichment cache for this call. When a contact was already enriched for your account within the last 24 hours, the cached result is returned and no credits are consumed; pass `true` to force a fresh enrichment instead (credits are consumed and the cache entry is refreshed)."
           }
         },
         "example": {
@@ -1524,6 +1528,10 @@
           "detect_job_change": {
             "type": "boolean",
             "description": "When `true`, each contact in the response will include a `jobChangeDetected` field indicating whether the contact has changed company since the input data was provided.\n\nOnly effective when `enrichment_type` includes `\"profile\"`."
+          },
+          "force_refresh": {
+            "type": "boolean",
+            "description": "Opt out of the 24h enrichment cache for this call. When a contact was already enriched for your account within the last 24 hours, the cached result is returned and no credits are consumed; pass `true` to force a fresh enrichment instead (credits are consumed and the cache entry is refreshed)."
           }
         },
         "example": {
@@ -2504,6 +2512,15 @@
           "jobChangeDetected": {
             "type": "boolean",
             "description": "Indicates whether the contact has changed company since the input data was provided.\n\n- `true` \u2014 the enriched company (domain or name) differs from the one in the input contact\n- `false` \u2014 the company is the same, or there is not enough data to determine a change\n\nOnly present in the webhook payload when `detect_job_change: true` was set in the request. Detection first compares company domains using fuzzy matching, falling back to company name if domains are unavailable."
+          },
+          "cached": {
+            "type": "boolean",
+            "description": "Present and `true` when the result was served from the 24h enrichment cache. No credits were consumed for this contact. Pass `force_refresh: true` in the request to bypass the cache."
+          },
+          "cached_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the cached result was originally enriched. Only present when `cached` is `true`."
           }
         }
       },
