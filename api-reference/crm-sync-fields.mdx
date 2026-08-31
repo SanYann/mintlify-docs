@@ -1,0 +1,128 @@
+---
+title: "Available Fields"
+icon: "list"
+---
+
+The records you send to [CRM Sync](/api-reference/endpoint/crm-sync) are free-form JSON objects. Their keys are **LoneScale field keys**, the same vocabulary your CRM integration mapping is built on.
+
+Two rules decide what actually reaches your CRM:
+
+1. LoneScale only reads the keys your mapping references. A key you send that no mapped field and no unicity criterion points at is ignored.
+2. A record whose keys match **none** of them is failed rather than silently written as a no-op, and the error lists the keys that mapping expects.
+
+Call [`GET /crm/mapping`](/api-reference/endpoint/crm-mapping) to see exactly which of the fields below your own mapping uses, before pushing anything.
+
+<Note>
+  Profile and company fields use the `lonescale_` prefix. Contact details do **not**: they are `main_email`, `main_phone` and friends.
+</Note>
+
+## People
+
+| Field key | Description |
+| --- | --- |
+| `lonescale_first_name` | First name |
+| `lonescale_last_name` | Last name |
+| `lonescale_full_name` | Full name |
+| `lonescale_linkedin_url` | LinkedIn profile URL |
+| `lonescale_universal_name` | LinkedIn public identifier (the slug in the profile URL) |
+| `lonescale_job_title` | Job title |
+| `lonescale_job_seniority` | Seniority level |
+| `lonescale_department` | Department |
+| `lonescale_sub_department` | Sub-department |
+| `lonescale_level` | Hierarchical level |
+| `lonescale_summary` | Profile summary |
+| `lonescale_city` | City |
+| `lonescale_geo_location_name` | Location name |
+| `lonescale_geo_country_name` | Country name |
+| `lonescale_country_code` | Country code |
+
+## Contact details
+
+| Field key | Description |
+| --- | --- |
+| `main_email` | Primary email |
+| `main_email_status` | Deliverability status of the primary email |
+| `secondary_emails` | Additional emails |
+| `secondary_emails_status` | Deliverability status of the additional emails |
+| `main_phone` | Primary phone |
+| `main_phone_region` | Region code of the primary phone |
+| `secondary_phones` | Additional phones |
+| `secondary_phones_region` | Region codes of the additional phones |
+
+## Company
+
+Company keys can be embedded on a contact record (to create or update the associated account at the same time) or sent on their own in the `companies` array.
+
+| Field key | Description |
+| --- | --- |
+| `lonescale_company_name` | Company name |
+| `lonescale_company_domain` | Company domain |
+| `lonescale_company_description` | Company description |
+| `lonescale_company_industry` | Industry |
+| `lonescale_company_linkedin_url` | Company LinkedIn URL |
+| `lonescale_company_linkedin_id` | Company LinkedIn id |
+| `lonescale_company_staff_count` | Employee count |
+| `lonescale_company_employee_range` | Employee range |
+| `lonescale_company_country` | Country |
+| `lonescale_company_country_code` | Country code |
+
+## CRM ids
+
+| Field key | Description |
+| --- | --- |
+| `contact_crm_id` | Update this exact CRM contact by id (for example the id returned by [`POST /crm/search`](/api-reference/endpoint/crm-search)), skipping unicity matching |
+| `account_crm_id` | Target this exact CRM company by id instead of matching by unicity criteria |
+| `crm_company_id` | The associated company id, available to your mapping as a value to write |
+
+## Accepted aliases
+
+You can send an enrich payload verbatim: these keys are translated to the field keys above before the mapping runs.
+
+| You send | Resolved to |
+| --- | --- |
+| `firstName`, `lastName`, `fullName` | `lonescale_first_name`, `lonescale_last_name`, `lonescale_full_name` |
+| `linkedinUrl`, `universalName` | `lonescale_linkedin_url`, `lonescale_universal_name` |
+| `jobTitle` | `lonescale_job_title` |
+| `email`, `emailStatus` | `main_email`, `main_email_status` |
+| `phone`, `phoneCountryCode` | `main_phone`, `main_phone_region` |
+| `lonescale_email`, `lonescale_phone` | `main_email`, `main_phone` |
+| `companyName`, `companyDomain`, `companyDescription`, `companyIndustry` | the matching `lonescale_company_*` key |
+| `companyEmployeeCount`, `companyEmployeeRange` | `lonescale_company_staff_count` and `lonescale_company_employee_count`, `lonescale_company_employee_range` |
+| `companyLinkedinUrl`, `companyLinkedinId`, `companyCity`, `companyCountry`, `companyCountryCode` | the matching `lonescale_company_*` key |
+| any bare `company_*` key | the matching `lonescale_company_*` key |
+
+An alias never overwrites a key you sent explicitly.
+
+## Salesforce: Contacts or Leads
+
+For Salesforce, the mapping also decides **which object** is written, exactly like in a workflow. No parameter on the request controls it:
+
+- Map the Contact section and the sync writes Contacts.
+- Map only the Lead section, leaving the Contact one empty, and the sync searches your Lead unicity criteria, then updates the match or creates a Lead.
+
+`GET /crm/mapping` reports this as `object: "contact"` or `object: "lead"`, and returns the resolved lead mapping alongside it.
+
+<Note>
+  Salesforce requires `Company` on Lead creation, so map it from `lonescale_company_name` and send that key on every record that may create a Lead.
+</Note>
+
+## Example
+
+```json
+{
+  "crm": "salesforce",
+  "settings_type": "api_sync",
+  "contacts": [
+    {
+      "lonescale_first_name": "Ada",
+      "lonescale_last_name": "Lovelace",
+      "lonescale_job_title": "Head of Data",
+      "lonescale_linkedin_url": "https://www.linkedin.com/in/ada-lovelace",
+      "main_email": "ada@acme.com",
+      "main_phone": "+33600000000",
+      "lonescale_company_name": "Acme",
+      "lonescale_company_domain": "acme.com"
+    }
+  ]
+}
+```

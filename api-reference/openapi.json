@@ -1044,7 +1044,7 @@
     },
     "/trigger/crm-sync": {
       "post": {
-        "description": "Push contacts and/or companies directly into your connected CRM. LoneScale creates or updates the records asynchronously, applying the team-level integration field mappings already configured in LoneScale (create/update fields and unicity criteria). No workflow is involved.\n\nRecord keys must match the LoneScale field keys referenced by your configured mappings (for example `lonescale_first_name`, `lonescale_company_domain`, or any custom key you mapped). Set `account_crm_id` on a record to target an existing CRM company by id instead of matching by unicity criteria.\n\nPoll `GET /trigger/crm-sync/{id}` with the returned `id`, or pass a `webhook_url` to be called once with the run summary when every record has been processed.",
+        "description": "Push contacts and/or companies directly into your connected CRM. LoneScale creates or updates the records asynchronously, applying the team-level integration field mappings already configured in LoneScale (create/update fields and unicity criteria). No workflow is involved.\n\nRecord keys must match the LoneScale field keys referenced by your configured mappings (for example `lonescale_first_name`, `lonescale_company_domain`, or any custom key you mapped); see [Available Fields](/api-reference/crm-sync-fields) for the full list. For Salesforce the mapping also decides the object: map only the Lead section and the sync searches, updates or creates Leads instead of Contacts. Set `account_crm_id` on a record to target an existing CRM company by id instead of matching by unicity criteria.\n\nPoll `GET /trigger/crm-sync/{id}` with the returned `id`, or pass a `webhook_url` to be called once with the run summary when every record has been processed.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1309,8 +1309,19 @@
                   "properties": {
                     "crm": { "type": "string" },
                     "settings_type": { "type": "string" },
+                    "object": { "type": "string", "enum": ["contact", "lead"], "description": "Which Salesforce object a sync will write, decided by the mapping itself: `lead` when only the Lead section is mapped." },
                     "contact": {
                       "type": "object",
+                      "properties": {
+                        "create_enabled": { "type": "boolean" },
+                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
+                        "unicity": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+                      }
+                    },
+                    "lead": {
+                      "type": "object",
+                      "description": "Only when `object` is `lead`: what a push will search, update and create.",
                       "properties": {
                         "create_enabled": { "type": "boolean" },
                         "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
@@ -3063,7 +3074,7 @@
       "CrmSyncRecord": {
         "type": "object",
         "additionalProperties": true,
-        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings. Profile/company fields use the `lonescale_` prefix (`lonescale_first_name`, `lonescale_job_title`, `lonescale_company_domain`, ...) but contact details do NOT: use `main_email`, `main_email_status`, `main_phone`, `main_phone_region`. camelCase keys from enrich payloads (`firstName`, `jobTitle`, `email`, `phone`, ...) are automatically aliased to the right field keys.",
+        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings. See [Available Fields](/api-reference/crm-sync-fields) for the full list. Profile/company fields use the `lonescale_` prefix (`lonescale_first_name`, `lonescale_job_title`, `lonescale_company_domain`, ...) but contact details do NOT: use `main_email`, `main_email_status`, `main_phone`, `main_phone_region`. camelCase keys from enrich payloads (`firstName`, `jobTitle`, `email`, `phone`, ...) are automatically aliased to the right field keys. A record whose keys match none of the mapped or unicity fields is failed, with the expected field keys in the error.",
         "properties": {
           "account_crm_id": {
             "type": "string",
