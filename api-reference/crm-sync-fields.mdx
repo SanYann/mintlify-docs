@@ -13,7 +13,7 @@ Two rules decide what actually reaches your CRM:
 Call [`GET /crm/mapping`](/api-reference/endpoint/crm-mapping) to see exactly which of the fields below your own mapping uses, before pushing anything.
 
 <Note>
-  Profile and company fields use the `lonescale_` prefix. Contact details do **not**: they are `main_email`, `main_phone` and friends.
+  **The prefix is optional.** Every key below can be sent without its `lonescale_` or `main_` prefix: `first_name`, `job_title`, `company_domain`, `email`, `phone`. Both forms work, and the bare one never overrides a prefixed key you sent explicitly.
 </Note>
 
 ## People
@@ -76,7 +76,11 @@ Company keys can be embedded on a contact record (to create or update the associ
 
 ## Accepted aliases
 
-You can send an enrich payload verbatim: these keys are translated to the field keys above before the mapping runs.
+Field keys are resolved before the mapping runs, so several spellings of the same field work.
+
+**Without the prefix.** Drop `lonescale_` or `main_` from any key in the tables above and it still resolves: `first_name`, `full_name`, `job_title`, `linkedin_url`, `department`, `city`, `country_code`, `company_name`, `company_domain`, `company_staff_count`, `email`, `email_status`, `phone`, `phone_region`. Person and company keys stay distinct: `city` is the contact's, `company_city` is the account's.
+
+**From an enrich payload.** You can also send our enrich output verbatim.
 
 | You send | Resolved to |
 | --- | --- |
@@ -114,15 +118,17 @@ For Salesforce, the mapping also decides **which object** is written, exactly li
   "settings_type": "api_sync",
   "contacts": [
     {
-      "lonescale_first_name": "Ada",
-      "lonescale_last_name": "Lovelace",
-      "lonescale_job_title": "Head of Data",
-      "lonescale_linkedin_url": "https://www.linkedin.com/in/ada-lovelace",
-      "main_email": "ada@acme.com",
-      "main_phone": "+33600000000",
-      "lonescale_company_name": "Acme",
-      "lonescale_company_domain": "acme.com"
+      "first_name": "Ada",
+      "last_name": "Lovelace",
+      "job_title": "Head of Data",
+      "linkedin_url": "https://www.linkedin.com/in/ada-lovelace",
+      "email": "ada@acme.com",
+      "phone": "+33600000000",
+      "company_name": "Acme",
+      "company_domain": "acme.com"
     }
   ]
 }
 ```
+
+The same record written as `lonescale_first_name`, `main_email` and so on is equivalent.

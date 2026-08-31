@@ -3074,7 +3074,7 @@
       "CrmSyncRecord": {
         "type": "object",
         "additionalProperties": true,
-        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings. See [Available Fields](/api-reference/crm-sync-fields) for the full list. Profile/company fields use the `lonescale_` prefix (`lonescale_first_name`, `lonescale_job_title`, `lonescale_company_domain`, ...) but contact details do NOT: use `main_email`, `main_email_status`, `main_phone`, `main_phone_region`. camelCase keys from enrich payloads (`firstName`, `jobTitle`, `email`, `phone`, ...) are automatically aliased to the right field keys. A record whose keys match none of the mapped or unicity fields is failed, with the expected field keys in the error.",
+        "description": "Free-form record: keys must match the LoneScale field keys referenced by the configured mappings. See [Available Fields](/api-reference/crm-sync-fields) for the full list. The `lonescale_` / `main_` prefix is optional: `first_name`, `job_title`, `company_domain`, `email` and `phone` resolve like their prefixed form, and camelCase keys from enrich payloads (`firstName`, `jobTitle`, ...) are aliased too. A record whose keys match none of the mapped or unicity fields is failed, with the expected field keys in the error.",
         "properties": {
           "account_crm_id": {
             "type": "string",
