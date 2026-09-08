@@ -54,6 +54,7 @@
             "pages": [
               "api-reference/endpoint/create",
               "api-reference/endpoint/enrich-sync",
+              "api-reference/endpoint/enrichment-history",
               "api-reference/endpoint/verify-phone",
               "api-reference/endpoint/contact-sourcing",
               "api-reference/endpoint/contact-sourcing-sync"

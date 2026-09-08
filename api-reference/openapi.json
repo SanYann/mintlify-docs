@@ -19,6 +19,80 @@
     }
   ],
   "paths": {
+    "/contacts/{identifier}/enrichment-history": {
+      "get": {
+        "description": "The last enrichment LoneScale holds for a contact, so you can keep your own long-lived cache and skip an enrichment you have already paid for.\n\n**This is a per-contact record, not a log of your calls.** Three limits follow from that, worth reading before you build on it:\n\n- At most **one entry per contact**: the latest state we know, not one entry per `/trigger/enrich` call. `providers` and `credits` are therefore not returned, since they are not retained per contact.\n- An enrichment that **found nothing leaves no entry**. A contact we searched and missed is indistinguishable from one we never searched: both return an empty `data`.\n- A hit on the 24h enrichment cache does **not** refresh `date`. It is the date of the last enrichment that actually ran, which is the date your cache should key on.\n\nThe history is scoped to your API key: you only ever read contacts your own account enriched.",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The contact, as a CRM record id, a LinkedIn profile URL or an email. URL-encode the value. A LinkedIn URL can also be passed as its bare vanity slug (`jane-doe`), which avoids encoding slashes altogether."
+          },
+          {
+            "name": "include_data",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Return the enriched contact itself in `data`. Off by default: the entry otherwise carries only what happened, not the data."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Entries per page."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `next_cursor` of the previous page. Entries come back newest first."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The contact's enrichment history. Empty `data` when the contact was never enriched on your account, or was searched without a result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrichmentHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "description": "Get profile information",
@@ -1388,6 +1462,130 @@
   },
   "components": {
     "schemas": {
+      "EnrichmentHistory": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnrichmentHistoryEntry"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pass as `cursor` for the next page. `null` on the last page."
+          }
+        }
+      },
+      "EnrichmentHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the contact was last enriched. Not refreshed by a hit on the 24h enrichment cache."
+          },
+          "first_enriched_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The first time this contact was enriched on your account."
+          },
+          "fields_found": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "email",
+                "phone",
+                "profile"
+              ]
+            },
+            "description": "Which of the three enrichment types produced a result."
+          },
+          "identifier": {
+            "type": "object",
+            "description": "The identifiers we hold for this contact, to reconcile against your own records.",
+            "properties": {
+              "linkedin_url": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "crm_id": {
+                "type": "string"
+              }
+            }
+          },
+          "data": {
+            "$ref": "#/components/schemas/EnrichmentHistoryContact",
+            "description": "Only present when `include_data=true`."
+          }
+        }
+      },
+      "EnrichmentHistoryContact": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "email_status": {
+            "type": "string"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Secondary addresses, excluding the one in `email`."
+          },
+          "phone": {
+            "type": "string"
+          },
+          "phones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "type": "string"
+                },
+                "region": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Secondary numbers, excluding the one in `phone`."
+          },
+          "linkedin_url": {
+            "type": "string"
+          },
+          "job_title": {
+            "type": "string"
+          },
+          "company_name": {
+            "type": "string"
+          },
+          "company_domain": {
+            "type": "string"
+          }
+        }
+      },
       "User": {
         "required": [
           "id",
