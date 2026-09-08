@@ -30,7 +30,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The contact, as an email, a phone number, a LinkedIn profile URL or a CRM record id. URL-encode the value (`+` in a phone number especially). A LinkedIn URL can also be passed as its bare vanity slug (`jane-doe`), which avoids encoding slashes altogether.\n\nEmails and phone numbers match secondary values too, not just the main one, and a phone number matches whatever spelling we stored it in: `+33621114568` and `+33 6 21 11 45 68` find the same contact."
+            "description": "The contact, as an email, a phone number, a LinkedIn profile URL or a CRM record id. URL-encode the value (`+` in a phone number especially). A LinkedIn URL can also be passed as its bare vanity slug (`jane-doe`), which avoids encoding slashes altogether.\n\nEmails and phone numbers match secondary values too, not just the main one, and a phone number matches whatever spelling we stored it in: `+33621114568` and `+33 6 21 11 45 68` find the same contact.\n\nOne case to know about: a contact that only ever reached LoneScale through this API, never through a CRM sync or a list import, carries no CRM id and, if you asked for `email` or `phone` alone, no LinkedIn URL either. Look those up by the email or phone we returned."
           },
           {
             "name": "include_data",
