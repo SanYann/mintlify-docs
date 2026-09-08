@@ -30,7 +30,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The contact, as a CRM record id, a LinkedIn profile URL or an email. URL-encode the value. A LinkedIn URL can also be passed as its bare vanity slug (`jane-doe`), which avoids encoding slashes altogether."
+            "description": "The contact, as an email, a phone number, a LinkedIn profile URL or a CRM record id. URL-encode the value (`+` in a phone number especially). A LinkedIn URL can also be passed as its bare vanity slug (`jane-doe`), which avoids encoding slashes altogether.\n\nEmails and phone numbers match secondary values too, not just the main one, and a phone number matches whatever spelling we stored it in: `+33621114568` and `+33 6 21 11 45 68` find the same contact."
           },
           {
             "name": "include_data",
