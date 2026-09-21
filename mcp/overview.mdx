@@ -18,14 +18,16 @@ Auth: **OAuth 2.0** (user-consent flow — see [Connect to Claude](/mcp/connect)
 
 ## Available tools
 
-All four tools below are available once the user has authorized with their LoneScale API key.
+The tools below are available once the user has authorized with their LoneScale API key.
 
 | Tool | Mode | Description |
 | --- | --- | --- |
+| `whoami` | sync | The user behind the API key: name, remaining credits, and `crm_links` (the HubSpot/Salesforce user they are linked to, or `null`). Tells whether a CRM push will be assigned to them or to the default owner. |
 | `public-api-companies-search` | sync | Look up a company by name, domain, LinkedIn slug, or LinkedIn ID. Returns one fixed-shape company profile. |
-| `public-api-enrich` | async | Trigger waterfall enrichment (email and/or phone) for a list of contacts. Returns a `lonescale_job_id`. |
+| `public-api-crm-search` | sync | Look up a contact in the connected CRM(s) by email, LinkedIn URL, or name + company. Returns matches with owner and `owned_by_you`, plus `caller_crm_links`. |
+| `public-api-enrich` | async | Trigger waterfall enrichment (email and/or phone) for a list of contacts. Checks the CRM first and stops if the contact already exists. With `sync_to_crm: true` the enriched contact is written to the CRM and assigned to the caller's linked CRM user. Returns a `lonescale_job_id`. |
 | `public-api-contact-sourcing` | async | Source contacts at a company by persona, seniority, and location. Returns a `lonescale_job_id`. |
-| `get-job-result` | sync | Poll for results of an async job using its `lonescale_job_id`. Returns `pending` until status is `ready`. |
+| `get-job-result` | sync | Poll for results of an async job using its `lonescale_job_id`. Returns `pending` until status is `ready`. Sourced contacts come back with a `crm` block (existing record + owner, or not in CRM). |
 
 Sync tools return results inline. Async tools return a job id immediately and the assistant must call `get-job-result` every few seconds until the status is `ready`.
 
