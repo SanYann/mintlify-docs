@@ -1677,6 +1677,11 @@
           "sync_to_crm": {
             "type": "boolean",
             "description": "Push the enriched contact into your connected CRM. Disabled by default: without it, this endpoint only enriches and never writes to your CRM.\n\nWhen `true`, the write-back uses the integration mapping configured for the **Chrome extension** (contact unicity criteria, create fields, company create fields). It can therefore **create** contacts and companies that did not exist, and the created records are owned by the CRM user linked to the API key holder.\n\nTo push records to your CRM with a dedicated mapping and a run status, use `POST /trigger/crm-sync` instead."
+          },
+          "source": {
+            "type": "string",
+            "enum": ["slack"],
+            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
           }
         },
         "example": {
@@ -1750,6 +1755,11 @@
           "sync_to_crm": {
             "type": "boolean",
             "description": "Push the enriched contact into your connected CRM. Disabled by default: without it, this endpoint only enriches and never writes to your CRM.\n\nWhen `true`, the write-back uses the integration mapping configured for the **Chrome extension** (contact unicity criteria, create fields, company create fields). It can therefore **create** contacts and companies that did not exist, and the created records are owned by the CRM user linked to the API key holder.\n\nTo push records to your CRM with a dedicated mapping and a run status, use `POST /trigger/crm-sync` instead."
+          },
+          "source": {
+            "type": "string",
+            "enum": ["slack"],
+            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
           }
         },
         "example": {
