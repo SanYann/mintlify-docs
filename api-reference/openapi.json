@@ -1306,7 +1306,7 @@
     },
     "/crm/search": {
       "post": {
-        "description": "Look up a contact in your connected CRM(s) and surface the record owner. Provide `email` and/or `linkedin_url`. Only connected CRMs are queried. Pipedrive and Sellsy search is email-only, so a linkedin-only lookup returns HubSpot/Salesforce matches only.",
+        "description": "Look up a contact in your connected CRM(s) and surface the record owner. Provide `email`, `linkedin_url`, or a name with a company. Only connected CRMs are queried. Pipedrive and Sellsy search is email-only, so a linkedin-only lookup returns HubSpot/Salesforce matches only. Each match carries `owned_by_you`, and `caller_crm_links` tells which CRM user the caller is linked to, so a client can say \"already yours\" vs \"owned by X\" and warn when a create would go to the default owner.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1611,6 +1611,7 @@
             "description": "User email address",
             "type": "string"
           },
+          "crm_links": { "$ref": "#/components/schemas/CrmLinks" },
           "plan": {
             "type": "object",
             "properties": {
@@ -1676,6 +1677,11 @@
           "sync_to_crm": {
             "type": "boolean",
             "description": "Push the enriched contact into your connected CRM. Disabled by default: without it, this endpoint only enriches and never writes to your CRM.\n\nWhen `true`, the write-back uses the integration mapping configured for the **Chrome extension** (contact unicity criteria, create fields, company create fields). It can therefore **create** contacts and companies that did not exist, and the created records are owned by the CRM user linked to the API key holder.\n\nTo push records to your CRM with a dedicated mapping and a run status, use `POST /trigger/crm-sync` instead."
+          },
+          "source": {
+            "type": "string",
+            "enum": ["slack"],
+            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
           }
         },
         "example": {
@@ -1749,6 +1755,11 @@
           "sync_to_crm": {
             "type": "boolean",
             "description": "Push the enriched contact into your connected CRM. Disabled by default: without it, this endpoint only enriches and never writes to your CRM.\n\nWhen `true`, the write-back uses the integration mapping configured for the **Chrome extension** (contact unicity criteria, create fields, company create fields). It can therefore **create** contacts and companies that did not exist, and the created records are owned by the CRM user linked to the API key holder.\n\nTo push records to your CRM with a dedicated mapping and a run status, use `POST /trigger/crm-sync` instead."
+          },
+          "source": {
+            "type": "string",
+            "enum": ["slack"],
+            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
           }
         },
         "example": {
@@ -3400,7 +3411,16 @@
           "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" },
           "matchedEmail": { "type": "string", "nullable": true, "description": "The address that actually matched. HubSpot's contact search also matches secondary addresses, so the record's primary `email` can differ from the one you searched." },
           "matchedOn": { "type": "string", "nullable": true, "enum": ["primary_email", "secondary_email", "linkedin", "unicity_criteria", "name_company_id", "name_company_name"], "description": "Which identifier produced the match. `unicity_criteria` means the team's own CRM unicity rules matched (the same rule crm-sync applies)." },
-          "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting." }
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting." },
+          "owned_by_you": { "type": "boolean", "description": "True when the record's owner is the CRM user linked to the API key holder (see `caller_crm_links`). Salesforce ids are compared on their 15-char prefix." }
+        }
+      },
+      "CrmLinks": {
+        "type": "object",
+        "description": "The CRM user linked to the API key holder (Settings > Members), per CRM. Records created by a CRM write-back (`sync_to_crm`, Chrome extension) are assigned to that user; `null` means not linked, so created records go to the connection's default owner. Pipedrive/Sellsy have no per-user link.",
+        "properties": {
+          "hubspot": { "type": "object", "nullable": true, "properties": { "ownerId": { "type": "string", "description": "HubSpot owner id" } } },
+          "salesforce": { "type": "object", "nullable": true, "properties": { "ownerId": { "type": "string", "description": "Salesforce user id" } } }
         }
       },
       "CrmSearchResult": {
@@ -3410,6 +3430,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/CrmContactMatch" }
           },
+          "caller_crm_links": { "$ref": "#/components/schemas/CrmLinks" },
           "searched_crms": {
             "type": "array",
             "items": { "type": "string" },
