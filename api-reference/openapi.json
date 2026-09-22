@@ -1612,6 +1612,14 @@
             "type": "string"
           },
           "crm_links": { "$ref": "#/components/schemas/CrmLinks" },
+          "chrome_credits": {
+            "type": "object",
+            "description": "Per-user credit quota applied to Chrome extension and Slack bot enrichments, set by the admin in Settings > Members. Distinct from the organization balance in `plan`. `limit` is null when the user has no cap.",
+            "properties": {
+              "limit": { "type": "integer", "nullable": true, "description": "Maximum credits this user may consume; null = no cap" },
+              "used": { "type": "integer", "description": "Credits consumed so far" }
+            }
+          },
           "plan": {
             "type": "object",
             "properties": {
@@ -1681,7 +1689,11 @@
           "source": {
             "type": "string",
             "enum": ["slack"],
-            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
+            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance, and answers 403 when that quota is reached. Requires `source_signature`; leave both unset for integrations."
+          },
+          "source_signature": {
+            "type": "string",
+            "description": "Signature proving `source` comes from LoneScale. Set by the LoneScale Slack agent; integrations never send it."
           }
         },
         "example": {
@@ -1759,7 +1771,11 @@
           "source": {
             "type": "string",
             "enum": ["slack"],
-            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
+            "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance, and answers 403 when that quota is reached. Requires `source_signature`; leave both unset for integrations."
+          },
+          "source_signature": {
+            "type": "string",
+            "description": "Signature proving `source` comes from LoneScale. Set by the LoneScale Slack agent; integrations never send it."
           }
         },
         "example": {
