@@ -1458,6 +1458,509 @@
           }
         }
       }
+    },
+    "/todays-accounts": {
+      "get": {
+        "description": "The accounts of a CRM book worth working today, best first (10 at most). An account gets in with a LoneScale signal in the last 30 days on its domain (job change, new hire, contact sourced, hiring burst; job postings over 14 days) and no CRM activity in the last 7 days. Each account comes with the signal, the person to reach (with the email and phone already known), its owner, the last touch and a score with the lines it adds up from (`score_parts`).\n\nThis returns the last list computed for the book. `status: none` means it was never ranked: call `POST /todays-accounts/refresh`, then poll this endpoint while `status` is `pending`.\n\nRequires Today's accounts to be enabled for the API key's holder. Rate limited to **30 requests per minute**.",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The book's list, whatever its status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodaysAccountsList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 30 requests per minute, counted per API key"
+          }
+        }
+      }
+    },
+    "/todays-accounts/refresh": {
+      "post": {
+        "description": "Ranks the book again. The ranking runs in the background (a few seconds to a minute): the answer has `status: pending`; poll `GET /todays-accounts` with the same `scope` until it is `ended`. A refresh while one is running returns the running one.\n\nRate limited to **10 requests per minute**.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The book's list, whatever its status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodaysAccountsList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 10 requests per minute, counted per API key"
+          }
+        }
+      }
+    },
+    "/todays-accounts/owners": {
+      "get": {
+        "description": "Searches the CRM owners (sales reps) of the connected CRM by name or email, 20 at most. Use an `id` as `owner_id` to assign an account, or as `scope` to rank that rep's book. Salesforce needs at least 2 letters.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A name or email fragment."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching CRM owners",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "owners": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TodaysAccountsOwner"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 30 requests per minute, counted per API key"
+          }
+        }
+      }
+    },
+    "/todays-accounts/assign": {
+      "post": {
+        "description": "Makes a sales rep the CRM owner of one of the listed accounts (the HubSpot company or the Salesforce Account), and of its highlighted contact too with `with_contact: true`. Writes to your CRM. Returns the list with the account's new owner.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "description": "The account's domain, as listed in `accounts[].domain`.",
+                    "example": "pennylane.com"
+                  },
+                  "owner_id": {
+                    "type": "string",
+                    "description": "A CRM owner id, from `GET /todays-accounts/owners`."
+                  },
+                  "with_contact": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Also make them the owner of the account's highlighted CRM contact."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  }
+                },
+                "required": [
+                  "domain",
+                  "owner_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The book's list, whatever its status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodaysAccountsList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The CRM refused the change (e.g. the account was assigned but not the contact)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "The account was assigned, the contact was not: insufficient access rights",
+                  "error": "Bad Request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account is not in this book's current list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Account not in this list",
+                  "error": "Not Found",
+                  "statusCode": 404
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 30 requests per minute, counted per API key"
+          }
+        }
+      }
+    },
+    "/todays-accounts/dismiss": {
+      "post": {
+        "description": "Hides one of the listed accounts for the whole organization until a newer signal arrives on it. The CRM is not touched.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "description": "The account's domain, as listed in `accounts[].domain`.",
+                    "example": "pennylane.com"
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  }
+                },
+                "required": [
+                  "domain"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The book's list, whatever its status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodaysAccountsList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 30 requests per minute, counted per API key"
+          }
+        }
+      }
+    },
+    "/todays-accounts/enrich": {
+      "post": {
+        "description": "Finds the missing email and phone of the person to reach on one of the listed accounts, right away (it can take up to a minute). Runs the same waterfall as the enrichment endpoints and consumes credits **only when something is found**. When the person is a contact of your CRM, the email and phone are written to it; nothing is created otherwise. Returns the list with the person's email and phone.\n\nRate limited to **10 requests per minute**.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "description": "The account's domain, as listed in `accounts[].domain`.",
+                    "example": "pennylane.com"
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  }
+                },
+                "required": [
+                  "domain"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The book's list, whatever its status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodaysAccountsList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The person has no LinkedIn profile nor CRM contact to enrich from",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "No LinkedIn profile or CRM contact",
+                  "error": "Bad Request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "No credits left",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Insufficient credits",
+                  "error": "Payment Required",
+                  "statusCode": 402
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account is not in this book's current list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Account not in this list",
+                  "error": "Not Found",
+                  "statusCode": 404
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 10 requests per minute, counted per API key"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3615,6 +4118,207 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CrmSyncRecordStatus"
+            }
+          }
+        }
+      },
+      "TodaysAccountsOwner": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "CRM owner id (HubSpot owner id, Salesforce User id)."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "TodaysAccountsList": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "pending",
+              "ended",
+              "error"
+            ],
+            "description": "`none`: never ranked, call refresh. `pending`: ranking, poll again."
+          },
+          "scope": {
+            "type": "string",
+            "nullable": true,
+            "description": "The book: `all`, `unassigned`, `owner:<CRM owner id>`, or `unlinked:<user id>` when the caller has no CRM owner."
+          },
+          "crm": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "hubspot",
+              "salesforce"
+            ]
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "owner_linked": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "False when the caller's own book was asked and no CRM owner matches their email."
+          },
+          "book_size": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Accounts with a domain in the book."
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodaysAccount"
+            }
+          }
+        }
+      },
+      "TodaysAccount": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "example": 1
+          },
+          "domain": {
+            "type": "string",
+            "example": "pennylane.com"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "crm_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "HubSpot company id or Salesforce Account id."
+          },
+          "owner": {
+            "type": "object",
+            "nullable": true,
+            "description": "`null` when unassigned.",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "signal": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "JOB_CHANGE",
+                  "NEW_HIRE",
+                  "JOB_POSTING",
+                  "CONTACT_SOURCING",
+                  "HIRING"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "example": "Charlotte C. just moved here as Team Lead BDR"
+              },
+              "detected_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          },
+          "person": {
+            "type": "object",
+            "nullable": true,
+            "description": "Who to reach; `null` when no contact is known.",
+            "properties": {
+              "full_name": {
+                "type": "string",
+                "nullable": true
+              },
+              "job_title": {
+                "type": "string",
+                "nullable": true
+              },
+              "linkedin_url": {
+                "type": "string",
+                "nullable": true
+              },
+              "crm_id": {
+                "type": "string",
+                "nullable": true,
+                "description": "CRM contact id, when the person is in the CRM."
+              },
+              "email": {
+                "type": "string",
+                "nullable": true
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "last_activity_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last sales activity on the account; `null` when never contacted."
+          },
+          "open_deal": {
+            "type": "boolean"
+          },
+          "looks_like_your_wins": {
+            "type": "boolean",
+            "description": "Industry and size typical of your recent closed-won deals."
+          },
+          "score": {
+            "type": "number",
+            "example": 10.4
+          },
+          "score_parts": {
+            "type": "array",
+            "description": "How the score adds up.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "example": "Job change, 10 d old"
+                },
+                "points": {
+                  "type": "number",
+                  "example": 6.1
+                }
+              }
             }
           }
         }
