@@ -27,6 +27,11 @@ The tools below are available once the user has authorized with their LoneScale 
 | `public-api-crm-search` | sync | Look up a contact in the connected CRM(s) by email, LinkedIn URL, or name + company. Returns matches with owner and `owned_by_you`, plus `caller_crm_links`. |
 | `public-api-enrich` | async | Trigger waterfall enrichment (email and/or phone) for a list of contacts. Checks the CRM first and stops if the contact already exists. With `sync_to_crm: true` the enriched contact is written to the CRM and assigned to the caller's linked CRM user. Returns a `lonescale_job_id`. |
 | `public-api-contact-sourcing` | async | Source contacts at a company by persona, seniority, and location. Returns a `lonescale_job_id`. |
+| `todays-accounts` | sync | The accounts of a CRM book worth working today, best first: the signal, the person to reach (email and phone known or not), the owner and the score breakdown. Your own book by default, or `all`, `unassigned`, or a rep's. Ranks the book when needed and waits for it. Requires Today's accounts to be enabled. |
+| `todays-accounts-owners` | sync | Search the CRM owners (sales reps) by name or email, for `assign-account` or to open a rep's book. |
+| `assign-account` | sync | Make a rep the CRM owner of a listed account, and of its contact (on by default). Writes to the CRM. |
+| `dismiss-account` | sync | Hide a listed account for the whole team until a new signal arrives. |
+| `enrich-account-contact` | sync | Find the missing email and phone of a listed account's contact, right away. Consumes credits only when something is found; written to the CRM contact when there is one. |
 | `get-job-result` | sync | Poll for results of an async job using its `lonescale_job_id`. Returns `pending` until status is `ready`. Sourced contacts come back with a `crm` block (existing record + owner, or not in CRM). |
 
 Sync tools return results inline. Async tools return a job id immediately and the assistant must call `get-job-result` every few seconds until the status is `ready`.
