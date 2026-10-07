@@ -78,6 +78,17 @@
             ]
           },
           {
+            "group": "Today's accounts",
+            "pages": [
+              "api-reference/endpoint/todays-accounts-list",
+              "api-reference/endpoint/todays-accounts-refresh",
+              "api-reference/endpoint/todays-accounts-owners",
+              "api-reference/endpoint/todays-accounts-assign",
+              "api-reference/endpoint/todays-accounts-dismiss",
+              "api-reference/endpoint/todays-accounts-enrich"
+            ]
+          },
+          {
             "group": "Webhooks",
             "pages": [
               "api-reference/endpoint/webhooks-list"
