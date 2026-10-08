@@ -289,7 +289,7 @@
     },
     "/trigger/contact-sourcing/sync": {
       "post": {
-        "description": "Search contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.\n\n**Time budget.** A sync call answers within about 45 seconds. Personas are searched in the order you send them and share the `limit`, so put the most important ones first. When the budget runs out before the limit is reached, the response has `partial: true` and lists `unfinished_personas` (the persona in progress and those not started): send them again in a new call, or use the asynchronous endpoint `/trigger/contact-sourcing` with a `webhook_url`, which has no time budget. Only the contacts returned are charged.",
+        "description": "Search contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.\n\n**Time budget.** A sync call answers within about 45 seconds. Personas are searched in the order you send them and share the `limit`, so put the most important ones first. When the budget runs out before the limit is reached, the response has `partial: true`: retry with fewer personas, or use the asynchronous endpoint `/trigger/contact-sourcing` with a `webhook_url`, which has no time budget. Only the contacts returned are charged.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1996,14 +1996,7 @@
           },
           "partial": {
             "type": "boolean",
-            "description": "`true` when the time budget ran out before `limit` contacts were found. The contacts returned are valid; the personas in `unfinished_personas` were not fully searched."
-          },
-          "unfinished_personas": {
-            "type": "array",
-            "description": "When `partial` is `true`: the persona in progress and the ones not started, as you sent them. Send them again to complete the search. Empty otherwise.",
-            "items": {
-              "$ref": "#/components/schemas/Persona"
-            }
+            "description": "`true` when the time budget ran out before `limit` contacts were found. The contacts returned are valid; the last personas were not fully searched."
           },
           "elapsed_ms": {
             "type": "integer",
@@ -2031,7 +2024,6 @@
           ],
           "profiles_found": 1,
           "partial": false,
-          "unfinished_personas": [],
           "elapsed_ms": 18342
         }
       },
