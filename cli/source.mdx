@@ -47,7 +47,7 @@ lonescale source \
 | `--disable-company-info` | Skip the company enrichment block in the response. |
 | `--custom <json>` | Custom metadata JSON, echoed back. |
 | `--wait` | Poll until the job completes (timeout 120 s by default). |
-| `--sync` | Use the synchronous endpoint (rate-limited to 5 req/min). |
+| `--sync` | Use the synchronous endpoint (rate-limited to 5 req/min, about 45 s of search: a cut run is flagged `partial`, list the most important personas first). |
 | `--timeout <seconds>` | Override the `--wait` / `--sync` timeout. |
 
 Plus all [global options](/cli/overview#global-options).
