@@ -4212,6 +4212,12 @@
             "type": "string",
             "nullable": true
           },
+          "location": {
+            "type": "string",
+            "nullable": true,
+            "description": "City and country from the CRM address; `null` when the CRM has none.",
+            "example": "Paris, France"
+          },
           "crm_id": {
             "type": "string",
             "nullable": true,
@@ -4299,6 +4305,10 @@
           "looks_like_your_wins": {
             "type": "boolean",
             "description": "Industry and size typical of your recent closed-won deals."
+          },
+          "former_customer": {
+            "type": "boolean",
+            "description": "A deal won more than 18 months ago: a win-back. Current customers (a deal won in the last 18 months, or the CRM's customer stage) are never listed."
           },
           "score": {
             "type": "number",
