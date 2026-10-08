@@ -289,7 +289,7 @@
     },
     "/trigger/contact-sourcing/sync": {
       "post": {
-        "description": "Search contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "description": "Search contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.\n\n**Time budget.** A sync call answers within about 45 seconds. Personas are searched in the order you send them and share the `limit`, so put the most important ones first. When the budget runs out before the limit is reached, the response has `partial: true` and lists `unfinished_personas` (the persona in progress and those not started): send them again in a new call, or use the asynchronous endpoint `/trigger/contact-sourcing` with a `webhook_url`, which has no time budget. Only the contacts returned are charged.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1850,6 +1850,14 @@
               "$ref": "#/components/schemas/CountryCode"
             }
           },
+          "included_cities": {
+            "type": "array",
+            "description": "List of city names to filter contacts by. Unlike `included_locations`, cities are not used as a search filter: contacts are sourced first, then only those whose location contains one of these cities are returned. City spelling is revalidated against `included_locations`, so both local and English spellings work (`Bruxelles` / `Brussels`, `Zürich` / `Zurich`), and combining `included_cities: [\"Paris\"]` with `included_locations: [\"FR\"]` excludes Paris, Texas. A contact whose city cannot be determined is not returned.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Paris", "Lyon"]
+          },
           "limit": {
             "type": "number",
             "description": "Maximum number of contacts to retrieve. Capped at 10.",
@@ -1985,6 +1993,21 @@
           "profiles_found": {
             "type": "integer",
             "description": "Total number of contacts found."
+          },
+          "partial": {
+            "type": "boolean",
+            "description": "`true` when the time budget ran out before `limit` contacts were found. The contacts returned are valid; the personas in `unfinished_personas` were not fully searched."
+          },
+          "unfinished_personas": {
+            "type": "array",
+            "description": "When `partial` is `true`: the persona in progress and the ones not started, as you sent them. Send them again to complete the search. Empty otherwise.",
+            "items": {
+              "$ref": "#/components/schemas/Persona"
+            }
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "description": "Time spent searching, in milliseconds."
           }
         },
         "example": {
@@ -2006,7 +2029,10 @@
               "client_company_domain": "acme.com"
             }
           ],
-          "profiles_found": 1
+          "profiles_found": 1,
+          "partial": false,
+          "unfinished_personas": [],
+          "elapsed_ms": 18342
         }
       },
       "ContactSourcingRequest": {
@@ -2443,6 +2469,14 @@
           },
           "exclude_job_titles": {
             "type": "array",
+            "description": "Job titles to leave out: a contact whose title contains one of them is not returned.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excluded_job_titles": {
+            "type": "array",
+            "description": "Same as `exclude_job_titles` (both are accepted).",
             "items": {
               "type": "string"
             }
@@ -2564,10 +2598,11 @@
           },
           "status": {
             "type": "string",
-            "description": "Status of the sourcing job",
+            "description": "Status of the sourcing job: `end` (contacts were sent), `not_found` (no contact matched) or `no_credits` (the plan has no contact credits left: nothing was searched or charged).",
             "enum": [
               "not_found",
-              "end"
+              "end",
+              "no_credits"
             ]
           },
           "profiles_found": {
