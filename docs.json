@@ -85,7 +85,8 @@
               "api-reference/endpoint/todays-accounts-owners",
               "api-reference/endpoint/todays-accounts-assign",
               "api-reference/endpoint/todays-accounts-dismiss",
-              "api-reference/endpoint/todays-accounts-enrich"
+              "api-reference/endpoint/todays-accounts-enrich",
+              "api-reference/endpoint/todays-accounts-find-people"
             ]
           },
           {
