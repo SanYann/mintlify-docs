@@ -202,7 +202,7 @@
     },
     "/trigger/enrich/sync": {
       "post": {
-        "description": "Enrich contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute, counted per API key** \u2014 contact us if your integration needs a higher limit, it can be raised per account.",
+        "description": "Enrich contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all enriched contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute, counted per API key** — contact us if your integration needs a higher limit, it can be raised per account.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -270,7 +270,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded \u2014 max 5 requests per minute",
+            "description": "Rate limit exceeded — max 5 requests per minute",
             "content": {
               "application/json": {
                 "schema": {
@@ -289,7 +289,7 @@
     },
     "/trigger/contact-sourcing/sync": {
       "post": {
-        "description": "Search contacts synchronously and return results directly in the response \u2014 no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
+        "description": "Search contacts synchronously and return results directly in the response — no webhook required.\n\nThe response contains all sourced contacts in a single call. **Maximum 10 contacts per request.** Rate limited to **5 requests per minute**.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -357,7 +357,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded \u2014 max 5 requests per minute",
+            "description": "Rate limit exceeded — max 5 requests per minute",
             "content": {
               "application/json": {
                 "schema": {
@@ -835,7 +835,7 @@
             }
           },
           "403": {
-            "description": "Validation failed \u2014 missing required fields for the list entity type",
+            "description": "Validation failed — missing required fields for the list entity type",
             "content": {
               "application/json": {
                 "schema": {
@@ -995,7 +995,7 @@
     },
     "/companies/search": {
       "get": {
-        "description": "Resolve a single company by domain, LinkedIn id, LinkedIn slug, or name and return a stable, fixed-shape result.\n\nAt least one of `domain`, `linkedin_id`, `slug`, or `name` is required. The response always returns the same set of fields \u2014 `null` (or `[]` for arrays) is used for any field we do not have data for, so client integrations can rely on a stable schema.\n\nWhen `enrich=true` and no cached match is found, the API will trigger an on-demand enrichment via data-sync; when `enrich=true` and a result has both a LinkedIn id and a universal name, a function-by-function headcount breakdown is also attached.\n\nThe optional `custom` map (e.g. `custom[crm_id]=abc-123`) is echoed back unchanged at the top level of the response \u2014 useful for correlating results with records on your side.\n\nRate limited to **5 requests per minute**.",
+        "description": "Resolve a single company by domain, LinkedIn id, LinkedIn slug, or name and return a stable, fixed-shape result.\n\nAt least one of `domain`, `linkedin_id`, `slug`, or `name` is required. The response always returns the same set of fields — `null` (or `[]` for arrays) is used for any field we do not have data for, so client integrations can rely on a stable schema.\n\nWhen `enrich=true` and no cached match is found, the API will trigger an on-demand enrichment via data-sync; when `enrich=true` and a result has both a LinkedIn id and a universal name, a function-by-function headcount breakdown is also attached.\n\nThe optional `custom` map (e.g. `custom[crm_id]=abc-123`) is echoed back unchanged at the top level of the response — useful for correlating results with records on your side.\n\nRate limited to **5 requests per minute**.",
         "parameters": [
           {
             "name": "domain",
@@ -1031,7 +1031,7 @@
             "name": "name",
             "in": "query",
             "required": false,
-            "description": "Company name. Best-effort match \u2014 prefer `domain`, `linkedin_id`, or `slug` for deterministic resolution.",
+            "description": "Company name. Best-effort match — prefer `domain`, `linkedin_id`, or `slug` for deterministic resolution.",
             "schema": {
               "type": "string",
               "minLength": 1
@@ -1051,7 +1051,7 @@
             "name": "custom",
             "in": "query",
             "required": false,
-            "description": "Arbitrary key/value passthrough echoed unchanged in the response \u2014 useful for correlating results with records on your side. Pass a **URL-encoded JSON object**, e.g. `custom=%7B%22crm_id%22%3A%22abc-123%22%2C%22priority%22%3A1%7D` (decodes to `{\"crm_id\":\"abc-123\",\"priority\":1}`). Only flat string/number values are kept \u2014 nested objects, arrays, booleans and null are dropped.",
+            "description": "Arbitrary key/value passthrough echoed unchanged in the response — useful for correlating results with records on your side. Pass a **URL-encoded JSON object**, e.g. `custom=%7B%22crm_id%22%3A%22abc-123%22%2C%22priority%22%3A1%7D` (decodes to `{\"crm_id\":\"abc-123\",\"priority\":1}`). Only flat string/number values are kept — nested objects, arrays, booleans and null are dropped.",
             "schema": {
               "type": "string"
             }
@@ -1069,7 +1069,7 @@
             }
           },
           "400": {
-            "description": "Invalid input \u2014 typically no filter provided, or an empty filter value.",
+            "description": "Invalid input — typically no filter provided, or an empty filter value.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1099,7 +1099,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded \u2014 max 5 requests per minute",
+            "description": "Rate limit exceeded — max 5 requests per minute",
             "content": {
               "application/json": {
                 "schema": {
@@ -1369,7 +1369,15 @@
             "name": "crm",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "enum": ["hubspot", "salesforce", "pipedrive", "sellsy"] },
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hubspot",
+                "salesforce",
+                "pipedrive",
+                "sellsy"
+              ]
+            },
             "description": "Target CRM. Optional when only one CRM has mapping settings."
           }
         ],
@@ -1381,34 +1389,151 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "crm": { "type": "string" },
-                    "settings_type": { "type": "string" },
-                    "object": { "type": "string", "enum": ["contact", "lead"], "description": "Which Salesforce object a sync will write, decided by the mapping itself: `lead` when only the Lead section is mapped." },
+                    "crm": {
+                      "type": "string"
+                    },
+                    "settings_type": {
+                      "type": "string"
+                    },
+                    "object": {
+                      "type": "string",
+                      "enum": [
+                        "contact",
+                        "lead"
+                      ],
+                      "description": "Which Salesforce object a sync will write, decided by the mapping itself: `lead` when only the Lead section is mapped."
+                    },
                     "contact": {
                       "type": "object",
                       "properties": {
-                        "create_enabled": { "type": "boolean" },
-                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
-                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
-                        "unicity": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+                        "create_enabled": {
+                          "type": "boolean"
+                        },
+                        "create_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        },
+                        "update_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        },
+                        "unicity": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "lead": {
                       "type": "object",
                       "description": "Only when `object` is `lead`: what a push will search, update and create.",
                       "properties": {
-                        "create_enabled": { "type": "boolean" },
-                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
-                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
-                        "unicity": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+                        "create_enabled": {
+                          "type": "boolean"
+                        },
+                        "create_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        },
+                        "update_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        },
+                        "unicity": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "company": {
                       "type": "object",
                       "properties": {
-                        "create_enabled": { "type": "boolean" },
-                        "create_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } },
-                        "update_fields": { "type": "array", "items": { "type": "object", "properties": { "from": { "type": "string" }, "to": { "type": "string", "nullable": true } } } }
+                        "create_enabled": {
+                          "type": "boolean"
+                        },
+                        "create_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        },
+                        "update_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -1418,11 +1543,23 @@
           },
           "409": {
             "description": "Several CRMs have mapping settings; pass `crm`",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "422": {
             "description": "No CRM mapping settings configured",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1771,7 +1908,7 @@
     },
     "/todays-accounts/dismiss": {
       "post": {
-        "description": "Hides one of the listed accounts for the whole organization until a newer signal arrives on it. The CRM is not touched.",
+        "description": "Skips one of the listed accounts for the whole organization. The CRM is not touched. `reason` says what happens next: `BAD_TIMING` (default) and `OTHER` hide it until a newer signal arrives on it; `IN_PROGRESS` hides it for 90 days whatever comes; `NOT_ICP` hides it and, once two accounts of the same industry were dismissed this way, takes 2 points off that industry's accounts in the ranking; `WRONG_CONTACT` keeps the account, never proposes that person on it again and swaps in the next contact.\n\nRate limited to **30 requests per minute**.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1787,6 +1924,18 @@
                   "scope": {
                     "type": "string",
                     "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "BAD_TIMING",
+                      "IN_PROGRESS",
+                      "NOT_ICP",
+                      "WRONG_CONTACT",
+                      "OTHER"
+                    ],
+                    "description": "Why the account is skipped; `BAD_TIMING` when omitted.",
+                    "example": "IN_PROGRESS"
                   }
                 },
                 "required": [
@@ -1845,7 +1994,7 @@
     },
     "/todays-accounts/enrich": {
       "post": {
-        "description": "Finds the missing email and phone of the person to reach on one of the listed accounts, right away (it can take up to a minute). Runs the same waterfall as the enrichment endpoints and consumes credits **only when something is found**. When the person is a contact of your CRM, the email and phone are written to it; nothing is created otherwise. Returns the list with the person's email and phone.\n\nRate limited to **10 requests per minute**.",
+        "description": "Finds the missing email and phone of one person of a listed account (`person`: the `crm_id` or `linkedin_url` of one of `people[]`; the first when omitted), right away (it can take up to a minute). Runs the same waterfall as the enrichment endpoints and consumes credits **only when something is found**. When the person is a contact of your CRM, the email and phone are written to it; nothing is created otherwise. Returns the list with the person's email and phone.\n\nRate limited to **10 requests per minute**.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1861,6 +2010,11 @@
                   "scope": {
                     "type": "string",
                     "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  },
+                  "person": {
+                    "type": "string",
+                    "description": "`crm_id` or `linkedin_url` of one of the account's `people[]`. The first (`person`) when omitted.",
+                    "example": "https://www.linkedin.com/in/jen-doe"
                   }
                 },
                 "required": [
@@ -1920,6 +2074,125 @@
                 },
                 "example": {
                   "message": "Insufficient credits",
+                  "error": "Payment Required",
+                  "statusCode": 402
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Today's accounts is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Today's accounts is not enabled for this user: ask LoneScale to turn it on.",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account is not in this book's current list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Account not in this list",
+                  "error": "Not Found",
+                  "statusCode": 404
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded: 10 requests per minute, counted per API key"
+          }
+        }
+      }
+    },
+    "/todays-accounts/find-people": {
+      "post": {
+        "description": "Finds up to 3 people matching your organization's persona at one of the listed accounts, right away (it can take up to a minute), and adds them to its `people[]`. Runs the same contact sourcing as `POST /trigger/contact-sourcing/sync` and consumes **one contact credit per person found**. Found people are kept as LoneScale contacts: later lists show them at no cost. Returns the list with the account's `people[]` updated.\n\nRate limited to **5 requests per minute**.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "description": "The account's domain, as listed in `accounts[].domain`.",
+                    "example": "pennylane.com"
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Which CRM book to rank: omit it for the API key holder's own accounts (their linked CRM owner), `all` for every account with a domain, `unassigned` for accounts nobody owns (HubSpot only), or a CRM owner id from `GET /todays-accounts/owners`."
+                  }
+                },
+                "required": [
+                  "domain"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The book's list, whatever its status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodaysAccountsList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No persona on the organization yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "No persona on the organization yet: set the job titles you sell to in Settings → Persona.",
+                  "error": "Bad Request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "No contact credits left",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Insufficient contact credits",
                   "error": "Payment Required",
                   "statusCode": 402
                 }
@@ -2114,7 +2387,9 @@
             "description": "User email address",
             "type": "string"
           },
-          "crm_links": { "$ref": "#/components/schemas/CrmLinks" },
+          "crm_links": {
+            "$ref": "#/components/schemas/CrmLinks"
+          },
           "plan": {
             "type": "object",
             "properties": {
@@ -2183,7 +2458,9 @@
           },
           "source": {
             "type": "string",
-            "enum": ["slack"],
+            "enum": [
+              "slack"
+            ],
             "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
           }
         },
@@ -2261,7 +2538,9 @@
           },
           "source": {
             "type": "string",
-            "enum": ["slack"],
+            "enum": [
+              "slack"
+            ],
             "description": "Reserved for LoneScale-hosted callers (the Slack bot). Meters the enrichment on the API key holder's per-user Chrome quota instead of the organization balance. Leave unset for integrations."
           }
         },
@@ -2554,7 +2833,10 @@
             "items": {
               "type": "string"
             },
-            "example": ["Paris", "Lyon"]
+            "example": [
+              "Paris",
+              "Lyon"
+            ]
           },
           "limit": {
             "type": "number",
@@ -3192,7 +3474,7 @@
           },
           "predicted_email": {
             "type": "string",
-            "description": "Pattern-based predicted email, set when the provider waterfall returned no email. Free \u2014 does not consume credits."
+            "description": "Pattern-based predicted email, set when the provider waterfall returned no email. Free — does not consume credits."
           },
           "email_pattern": {
             "type": "string",
@@ -3247,7 +3529,7 @@
           },
           "jobChangeDetected": {
             "type": "boolean",
-            "description": "Indicates whether the contact has changed company since the input data was provided.\n\n- `true` \u2014 the enriched company (domain or name) differs from the one in the input contact\n- `false` \u2014 the company is the same, or there is not enough data to determine a change\n\nOnly present in the webhook payload when `detect_job_change: true` was set in the request. Detection first compares company domains using fuzzy matching, falling back to company name if domains are unavailable."
+            "description": "Indicates whether the contact has changed company since the input data was provided.\n\n- `true` — the enriched company (domain or name) differs from the one in the input contact\n- `false` — the company is the same, or there is not enough data to determine a change\n\nOnly present in the webhook payload when `detect_job_change: true` was set in the request. Detection first compares company domains using fuzzy matching, falling back to company name if domains are unavailable."
           },
           "cached": {
             "type": "boolean",
@@ -3549,7 +3831,7 @@
       },
       "CompanySearchResult": {
         "type": "object",
-        "description": "Stable, fixed-shape company hit. Every field is always present \u2014 `null` (or `[]`) is used for any datum we do not have.",
+        "description": "Stable, fixed-shape company hit. Every field is always present — `null` (or `[]`) is used for any datum we do not have.",
         "required": [
           "linkedinId",
           "linkedinUniversalName",
@@ -3869,7 +4151,9 @@
             "type": "string",
             "description": "Used with `last_name` + a company when no email/LinkedIn is available. Matches are fuzzier and reported with a lower `confidence`."
           },
-          "last_name": { "type": "string" },
+          "last_name": {
+            "type": "string"
+          },
           "company_domain": {
             "type": "string",
             "description": "Constrains a name search to that company. Preferred over `company_name` (more precise)."
@@ -3902,28 +4186,107 @@
               "sellsy"
             ]
           },
-          "id": { "type": "string", "description": "CRM record id" },
-          "name": { "type": "string", "nullable": true },
-          "email": { "type": "string", "nullable": true },
-          "title": { "type": "string", "nullable": true },
-          "profileUrl": { "type": "string", "nullable": true, "description": "LinkedIn URL stored on the record" },
-          "url": { "type": "string", "nullable": true, "description": "Link to the CRM record" },
-          "company": { "type": "string", "nullable": true },
-          "companyDomain": { "type": "string", "nullable": true },
-          "ownerId": { "type": "string", "nullable": true, "description": "CRM owner id" },
-          "ownerName": { "type": "string", "nullable": true, "description": "CRM owner name (null for Sellsy)" },
-          "matchedEmail": { "type": "string", "nullable": true, "description": "The address that actually matched. HubSpot's contact search also matches secondary addresses, so the record's primary `email` can differ from the one you searched." },
-          "matchedOn": { "type": "string", "nullable": true, "enum": ["primary_email", "secondary_email", "linkedin", "unicity_criteria", "name_company_id", "name_company_name"], "description": "Which identifier produced the match. `unicity_criteria` means the team's own CRM unicity rules matched (the same rule crm-sync applies)." },
-          "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting." },
-          "owned_by_you": { "type": "boolean", "description": "True when the record's owner is the CRM user linked to the API key holder (see `caller_crm_links`). Salesforce ids are compared on their 15-char prefix." }
+          "id": {
+            "type": "string",
+            "description": "CRM record id"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "LinkedIn URL stored on the record"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Link to the CRM record"
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyDomain": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "CRM owner id"
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true,
+            "description": "CRM owner name (null for Sellsy)"
+          },
+          "matchedEmail": {
+            "type": "string",
+            "nullable": true,
+            "description": "The address that actually matched. HubSpot's contact search also matches secondary addresses, so the record's primary `email` can differ from the one you searched."
+          },
+          "matchedOn": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "primary_email",
+              "secondary_email",
+              "linkedin",
+              "unicity_criteria",
+              "name_company_id",
+              "name_company_name"
+            ],
+            "description": "Which identifier produced the match. `unicity_criteria` means the team's own CRM unicity rules matched (the same rule crm-sync applies)."
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting."
+          },
+          "owned_by_you": {
+            "type": "boolean",
+            "description": "True when the record's owner is the CRM user linked to the API key holder (see `caller_crm_links`). Salesforce ids are compared on their 15-char prefix."
+          }
         }
       },
       "CrmLinks": {
         "type": "object",
         "description": "The CRM user linked to the API key holder (Settings > Members), per CRM. Records created by a CRM write-back (`sync_to_crm`, Chrome extension) are assigned to that user; `null` means not linked, so created records go to the connection's default owner. Pipedrive/Sellsy have no per-user link.",
         "properties": {
-          "hubspot": { "type": "object", "nullable": true, "properties": { "ownerId": { "type": "string", "description": "HubSpot owner id" } } },
-          "salesforce": { "type": "object", "nullable": true, "properties": { "ownerId": { "type": "string", "description": "Salesforce user id" } } }
+          "hubspot": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "ownerId": {
+                "type": "string",
+                "description": "HubSpot owner id"
+              }
+            }
+          },
+          "salesforce": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "ownerId": {
+                "type": "string",
+                "description": "Salesforce user id"
+              }
+            }
+          }
         }
       },
       "CrmSearchResult": {
@@ -3931,12 +4294,18 @@
         "properties": {
           "matches": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/CrmContactMatch" }
+            "items": {
+              "$ref": "#/components/schemas/CrmContactMatch"
+            }
           },
-          "caller_crm_links": { "$ref": "#/components/schemas/CrmLinks" },
+          "caller_crm_links": {
+            "$ref": "#/components/schemas/CrmLinks"
+          },
           "searched_crms": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "The connected CRMs actually queried."
           },
           "default_crm": {
@@ -3950,8 +4319,12 @@
             "items": {
               "type": "object",
               "properties": {
-                "crm": { "type": "string" },
-                "error": { "type": "string" }
+                "crm": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -3960,10 +4333,21 @@
       "Webhook": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "Pass as `webhook_id` to POST /trigger/crm-sync" },
-          "name": { "type": "string", "nullable": true },
-          "url": { "type": "string" },
-          "status": { "type": "string", "nullable": true }
+          "id": {
+            "type": "string",
+            "description": "Pass as `webhook_id` to POST /trigger/crm-sync"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          }
         }
       },
       "WebhookList": {
@@ -3971,7 +4355,9 @@
         "properties": {
           "webhooks": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Webhook" }
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            }
           }
         }
       },
@@ -4202,6 +4588,17 @@
             "description": "City and country from the CRM address; `null` when the CRM has none.",
             "example": "Paris, France"
           },
+          "industry": {
+            "type": "string",
+            "nullable": true,
+            "description": "The CRM industry; `null` when the CRM has none."
+          },
+          "angle": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why this person, why now: one line written at list time in the account's language. `null` when it could not be written.",
+            "example": "Nouveau VP Sales depuis 8 jours : il choisit ses outils maintenant."
+          },
           "crm_id": {
             "type": "string",
             "nullable": true,
@@ -4248,8 +4645,19 @@
           "person": {
             "type": "object",
             "nullable": true,
-            "description": "Who to reach; `null` when no contact is known.",
+            "description": "The one to reach first (`people[0]`); `null` when no contact is known.",
             "properties": {
+              "role": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "DECISION_MAKER",
+                  "CHAMPION",
+                  "USER",
+                  null
+                ],
+                "description": "Who they are to the purchase, read off the job title; `null` when unclear."
+              },
               "full_name": {
                 "type": "string",
                 "nullable": true
@@ -4275,6 +4683,13 @@
                 "type": "string",
                 "nullable": true
               }
+            }
+          },
+          "people": {
+            "type": "array",
+            "description": "The buying committee, the signal's person first: up to 3, one per role when LoneScale or your CRM knows them (more after `find-people`). Older lists carry `[person]`.",
+            "items": {
+              "$ref": "#/components/schemas/TodaysAccountPerson"
             }
           },
           "last_activity_at": {
@@ -4314,6 +4729,48 @@
                 }
               }
             }
+          }
+        }
+      },
+      "TodaysAccountPerson": {
+        "type": "object",
+        "description": "A person to reach at a listed account.",
+        "properties": {
+          "role": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "DECISION_MAKER",
+              "CHAMPION",
+              "USER",
+              null
+            ],
+            "description": "Who they are to the purchase, read off the job title; `null` when unclear."
+          },
+          "full_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "job_title": {
+            "type": "string",
+            "nullable": true
+          },
+          "linkedin_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "crm_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "CRM contact id, when the person is in the CRM."
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
           }
         }
       }
