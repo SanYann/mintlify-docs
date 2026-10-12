@@ -3540,6 +3540,21 @@
                 }
               }
             }
+          },
+          "warnings": {
+            "type": "array",
+            "description": "Per-CRM lookups that were skipped, not failed: for example a `linkedin_url` was given but no LinkedIn property is mapped in that CRM's settings, so only the other identifiers were searched. Present only when something was skipped. An empty `matches` alongside `warnings` is weaker than a plain \"no match\": say so to the user before creating a record.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "crm": {
+                  "type": "string"
+                },
+                "warning": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
