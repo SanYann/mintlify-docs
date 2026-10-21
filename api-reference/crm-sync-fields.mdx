@@ -72,6 +72,7 @@ Company keys can be embedded on a contact record (to create or update the associ
 | --- | --- |
 | `contact_crm_id` | Update this exact CRM contact by id (for example the id returned by [`POST /crm/search`](/api-reference/endpoint/crm-search)), skipping unicity matching |
 | `account_crm_id` | Target this exact CRM company by id instead of matching by unicity criteria |
+| `owner_id` | Salesforce only: the User id (`005…`) that owns the created or updated Lead or Contact. Without it the CRM keeps its default owner on create and the current owner on update. A mapping row on `OwnerId` takes precedence |
 | `crm_company_id` | The associated company id, available to your mapping as a value to write |
 
 ## Accepted aliases

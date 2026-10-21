@@ -4119,6 +4119,10 @@
           "contact_crm_id": {
             "type": "string",
             "description": "Optional CRM contact id (e.g. the id returned by POST /crm/search): updates that exact contact instead of matching by unicity criteria."
+          },
+          "owner_id": {
+            "type": "string",
+            "description": "Salesforce only. Optional User id (005…) that owns the created or updated Lead or Contact. Without it the CRM keeps its default owner on create and the current owner on update; a mapping row on OwnerId takes precedence."
           }
         }
       },
