@@ -1306,7 +1306,7 @@
     },
     "/crm/search": {
       "post": {
-        "description": "Look up a contact in your connected CRM(s) and surface the record owner. Provide `email`, `linkedin_url`, `first_name` + `last_name` (matched on your CRM unicity criteria only), or a name part with `company_domain` / `company_name` (name + company match, lower confidence). A name-only miss carries a `warnings` entry. Only connected CRMs are queried. Pipedrive and Sellsy search is email-only, so a linkedin-only lookup returns HubSpot/Salesforce matches only. Each match carries `owned_by_you`, and `caller_crm_links` tells which CRM user the caller is linked to, so a client can say \"already yours\" vs \"owned by X\" and warn when a create would go to the default owner.",
+        "description": "Look up contacts and companies in your connected CRM(s) and surface the record owner. Two forms. **Flat**: one contact, with `email`, `linkedin_url`, or a name with a company; the answer is `matches`. **Records**: `contacts` and/or `companies`, the same free-form records as `POST /trigger/crm-sync` (`lonescale_*` keys, bare `company_*` and camelCase aliases, `account_crm_id`), at most 20 in all; each record is searched on its own and answered under its index in `contacts[i]` / `companies[i]`, so you can pre-check the exact payload you are about to sync. Companies are matched, in order, by CRM id, by your company unicity criteria (of the `settings_type` record), by LinkedIn page, by domain, by exact name (`matchedOn` says which). Only connected CRMs are queried. Pipedrive and Sellsy search contacts by email and companies by name only. Each match carries `owned_by_you`, and `caller_crm_links` tells which CRM user the caller is linked to, so a client can say \"already yours\" vs \"owned by X\" and warn when a create would go to the default owner.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1344,14 +1344,14 @@
             }
           },
           "422": {
-            "description": "No usable identifier: provide email, linkedin_url, first_name + last_name, or a name part with company_domain or company_name",
+            "description": "No usable identifier in the flat form (provide email, linkedin_url, first_name + last_name, or a name part with company_domain or company_name), empty record arrays, more than 20 records, or a `settings_type` no connected CRM has",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 },
                 "example": {
-                  "message": "email or linkedin_url is required",
+                  "message": "Provide email, linkedin_url, first_name + last_name, or a name part together with company_domain or company_name",
                   "error": "Unprocessable Entity",
                   "statusCode": 422
                 }
@@ -4178,8 +4178,28 @@
       },
       "CrmSearchRequest": {
         "type": "object",
-        "description": "Provide `email`, `linkedin_url`, or a name (`first_name`/`last_name`) together with `company_domain` or `company_name`. A name is never searched unconstrained.",
+        "description": "Flat form: provide `email`, `linkedin_url`, or a name (`first_name`/`last_name`) together with `company_domain` or `company_name`; a name is never searched unconstrained. Records form: `contacts` and/or `companies` (the crm-sync records), answered per record.",
         "properties": {
+          "contacts": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/CrmSyncRecord"
+            },
+            "description": "Contact records in the crm-sync vocabulary (`main_email`, `lonescale_linkedin_url`, `lonescale_first_name` / `lonescale_last_name`, `lonescale_company_domain` / `lonescale_company_name`; aliases accepted). Each one is searched like the flat form and answered in `contacts[i]`. At most 20 records (contacts + companies) per request."
+          },
+          "companies": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/CrmSyncRecord"
+            },
+            "description": "Company records: `lonescale_company_domain`, `lonescale_company_name`, `lonescale_company_linkedin_url` (aliases accepted), or `account_crm_id` to read one by id. Answered in `companies[i]`. Other `lonescale_company_*` keys on the record feed your company unicity criteria."
+          },
+          "settings_type": {
+            "type": "string",
+            "description": "Pin the per-use-case settings record (`api_sync`, `contact_sourcing`, …) the search reads its LinkedIn property and unicity criteria from, same values as `POST /trigger/crm-sync`. Only the CRMs carrying that record are searched; 422 when none does."
+          },
           "email": {
             "type": "string",
             "description": "Email to look up in the connected CRM(s)."
@@ -4238,6 +4258,11 @@
           "email": {
             "type": "string",
             "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Phone already on the record (mobile first). HubSpot and Salesforce."
           },
           "title": {
             "type": "string",
@@ -4298,9 +4323,111 @@
             ],
             "description": "How much to trust the match. Email / LinkedIn / unicity-criteria hits are `high`; a name constrained by a resolved company is `medium`; a name matched against a free-text company name is `low` (homonym risk) and should be verified before acting."
           },
+          "object": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "lead"
+            ],
+            "description": "Salesforce only: `lead` when the team's mapping writes Leads."
+          },
           "owned_by_you": {
             "type": "boolean",
             "description": "True when the record's owner is the CRM user linked to the API key holder (see `caller_crm_links`). Salesforce ids are compared on their 15-char prefix."
+          }
+        }
+      },
+      "CrmCompanyMatch": {
+        "type": "object",
+        "properties": {
+          "crm": {
+            "type": "string",
+            "enum": [
+              "hubspot",
+              "salesforce",
+              "pipedrive",
+              "sellsy"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "CRM record id: pass it back as `account_crm_id` to `POST /trigger/crm-sync` to update that company."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true,
+            "description": "Website / domain stored on the record"
+          },
+          "linkedinUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "LinkedIn company page stored on the record"
+          },
+          "ownerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null on Sellsy (no staff endpoint)."
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Link to the record in the CRM. Null on Sellsy."
+          },
+          "matchedOn": {
+            "type": "string",
+            "enum": [
+              "crm_id",
+              "unicity_criteria",
+              "linkedin",
+              "domain",
+              "name"
+            ],
+            "description": "The tier that found it, in search order. `unicity_criteria` is the rule crm-sync applies. A `linkedin` or `name` hit is a record a crm-sync without criteria would not find by domain: pass its id as `account_crm_id`."
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "low"
+            ],
+            "description": "`low` for a name hit (homonym risk), `high` for every other tier."
+          },
+          "owned_by_you": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CrmSearchRecordResult": {
+        "type": "object",
+        "description": "The answer for one record of the records form, under the record's position in the request.",
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/CrmContactMatch"
+                },
+                {
+                  "$ref": "#/components/schemas/CrmCompanyMatch"
+                }
+              ]
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Present when the record carried nothing searchable (`no identifier`): no CRM was queried for it."
           }
         }
       },
@@ -4335,8 +4462,23 @@
         "properties": {
           "matches": {
             "type": "array",
+            "description": "Flat form only.",
             "items": {
               "$ref": "#/components/schemas/CrmContactMatch"
+            }
+          },
+          "contacts": {
+            "type": "array",
+            "description": "Records form only: one entry per `contacts[i]` of the request, in order.",
+            "items": {
+              "$ref": "#/components/schemas/CrmSearchRecordResult"
+            }
+          },
+          "companies": {
+            "type": "array",
+            "description": "Records form only: one entry per `companies[i]` of the request, in order.",
+            "items": {
+              "$ref": "#/components/schemas/CrmSearchRecordResult"
             }
           },
           "caller_crm_links": {
@@ -4364,6 +4506,21 @@
                   "type": "string"
                 },
                 "error": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "description": "Lookups a CRM skipped (for example a LinkedIn URL with no LinkedIn property mapped): the other identifiers were searched, so a \"no match\" is weaker than it looks. Deduplicated across records.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "crm": {
+                  "type": "string"
+                },
+                "warning": {
                   "type": "string"
                 }
               }
