@@ -57,7 +57,8 @@
               "api-reference/endpoint/enrichment-history",
               "api-reference/endpoint/verify-phone",
               "api-reference/endpoint/contact-sourcing",
-              "api-reference/endpoint/contact-sourcing-sync"
+              "api-reference/endpoint/contact-sourcing-sync",
+              "api-reference/endpoint/personas-list"
             ]
           },
           {

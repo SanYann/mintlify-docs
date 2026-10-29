@@ -1564,6 +1564,38 @@
         }
       }
     },
+    "/users/personas": {
+      "get": {
+        "description": "List the personas saved in your LoneScale account (Settings \u2192 Personas), so you can pass their `id` in `persona_ids` on `POST /trigger/contact-sourcing` and `POST /trigger/contact-sourcing/sync` instead of retyping the job titles. A supervisor sees the personas of their organization admin, like in the app.\n\nPersona names are not unique: reference a persona by its `id`. The id is also available from the persona menu in the app (**Copy ID**). Rate limited to **30 requests per minute**.",
+        "responses": {
+          "200": {
+            "description": "Saved personas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedPersonaList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/webhooks": {
       "get": {
         "description": "List the platform webhooks configured for your team, so you can pass a `webhook_id` destination to `POST /trigger/crm-sync` (push records without a connected CRM). Deduped by URL.",
@@ -2611,9 +2643,6 @@
       "ContactSourcingSyncRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "personas"
-        ],
         "properties": {
           "company_domain": {
             "type": "string",
@@ -2627,13 +2656,20 @@
             "type": "string",
             "description": "Company LinkedIn URL used to search contacts, increasing result coverage and accuracy by 25%."
           },
+          "persona_ids": {
+            "type": "array",
+            "description": "Ids of personas saved in LoneScale, from `GET /users/personas` or **Copy ID** in the app. Their included and excluded job titles are used as saved, searched before any inline `personas`. An unknown id returns a 400 naming it. Pass `persona_ids`, `personas`, or both.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["V1StGXR8_Z5jdHi6B-myT"]
+          },
           "personas": {
             "type": "array",
-            "description": "Personas to use to search and filter contacts within the company.",
+            "description": "Personas to use to search and filter contacts within the company. Optional when `persona_ids` is set.",
             "items": {
               "$ref": "#/components/schemas/Persona"
-            },
-            "minItems": 1
+            }
           },
           "included_locations": {
             "type": "array",
@@ -2824,7 +2860,6 @@
         "additionalProperties": false,
         "required": [
           "company_domain",
-          "personas",
           "webhook_url"
         ],
         "properties": {
@@ -2840,13 +2875,20 @@
             "type": "string",
             "description": "Company LinkedIn URL used to search contacts, increasing result coverage and accuracy by 25%."
           },
+          "persona_ids": {
+            "type": "array",
+            "description": "Ids of personas saved in LoneScale, from `GET /users/personas` or **Copy ID** in the app. Their included and excluded job titles are used as saved, searched before any inline `personas`. An unknown id returns a 400 naming it. Pass `persona_ids`, `personas`, or both.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["V1StGXR8_Z5jdHi6B-myT"]
+          },
           "personas": {
             "type": "array",
-            "description": "Personas to use to search and filter contacts within the company",
+            "description": "Personas to use to search and filter contacts within the company. Optional when `persona_ids` is set.",
             "items": {
               "$ref": "#/components/schemas/Persona"
-            },
-            "minItems": 1
+            }
           },
           "included_locations": {
             "type": "array",
@@ -3236,6 +3278,48 @@
           "ZW",
           "AX"
         ]
+      },
+      "SavedPersonaList": {
+        "type": "object",
+        "properties": {
+          "personas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Pass it in `persona_ids` on contact sourcing."
+                },
+                "name": {
+                  "type": "string"
+                },
+                "job_titles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "excluded_job_titles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "personas": [
+            {
+              "id": "V1StGXR8_Z5jdHi6B-myT",
+              "name": "C&B",
+              "job_titles": ["Compensation & Benefits", "Total Rewards"],
+              "excluded_job_titles": ["Intern", "Assistant"]
+            }
+          ]
+        }
       },
       "Persona": {
         "type": "object",
