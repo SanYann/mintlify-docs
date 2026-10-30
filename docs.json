@@ -91,6 +91,12 @@
             ]
           },
           {
+            "group": "Workflows",
+            "pages": [
+              "api-reference/endpoint/workflows-list"
+            ]
+          },
+          {
             "group": "Webhooks",
             "pages": [
               "api-reference/endpoint/webhooks-list"
