@@ -376,7 +376,7 @@
     },
     "/trigger/contact-sourcing": {
       "post": {
-        "description": "Search Contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Sourcing payload](/api-reference/webhookpayload/sourcing-payload) documentation for the full webhook schema.",
+        "description": "Search Contacts.\n\nLoneScale will call your `webhook_url` with this payload once the job is completed.\n\nSee the [Sourcing payload](/api-reference/webhookpayload/sourcing-payload) documentation for the full webhook schema.\n\n**Run one of your workflows instead.** Pass `workflow_id` and no `webhook_url`: the company is added to the workflow's list and sourced like a CRM or Chrome extension trigger, with the workflow's personas, enrichment and CRM sync. Name the company with `company_crm_id`, `company_linkedin_url` or `company_domain`; without any, the call returns a 400. A paused workflow keeps the company and sources it once resumed. The response is `{ id, name, status }` with `status` `processing` or `paused`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1574,6 +1574,41 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SavedPersonaList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows": {
+      "get": {
+        "description": "List your workflows (running, paused and drafted), with their settings. Use the `id` of a `CONTACT_SOURCING` workflow as `workflow_id` on `POST /trigger/contact-sourcing` to source a company with that workflow and have the contacts written to your CRM.",
+        "responses": {
+          "200": {
+            "description": "Your workflows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowSummary"
+                  }
                 }
               }
             }
@@ -2858,14 +2893,10 @@
       "ContactSourcingRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "company_domain",
-          "webhook_url"
-        ],
         "properties": {
           "company_domain": {
             "type": "string",
-            "description": "Company domain or website to search contacts from."
+            "description": "Company domain or website to search contacts from. Required, unless `workflow_id` is set with `company_crm_id` or `company_linkedin_url`."
           },
           "company_name": {
             "type": "string",
@@ -2915,7 +2946,16 @@
           "webhook_url": {
             "type": "string",
             "format": "uri",
-            "description": "Webhook endpoint to receive results."
+            "description": "Webhook endpoint to receive results. Required, unless `workflow_id` is set: then leave it out, since a `webhook_url` makes the call ignore `workflow_id`."
+          },
+          "workflow_id": {
+            "type": "string",
+            "description": "Run one of your contact sourcing workflows on this company instead (ids from `GET /workflows`, type `CONTACT_SOURCING`). The workflow's own personas, enrichment and CRM sync apply, and the contacts are written to your CRM, not sent back. Leave `webhook_url` out. An unknown workflow returns a 404."
+          },
+          "company_crm_id": {
+            "type": "string",
+            "description": "With `workflow_id`: the company's CRM record, as `HUBSPOT:<company id>` or `SALESFORCE:<account id>`. The contacts are associated to that record. A HubSpot record must come with its `company_domain` or `company_linkedin_url`, which the run does not read from HubSpot.",
+            "example": "HUBSPOT:18342957301"
           },
           "disable_company_info": {
             "type": "boolean",
@@ -3278,6 +3318,30 @@
           "ZW",
           "AX"
         ]
+      },
+      "WorkflowSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "`CONTACT_SOURCING` for the workflows `workflow_id` takes on contact sourcing.",
+            "example": "CONTACT_SOURCING"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["RUNNING", "PAUSED", "DRAFTED"]
+          },
+          "settings": {
+            "type": "object",
+            "description": "The workflow's configuration (personas, filters, CRM sync)."
+          }
+        }
       },
       "SavedPersonaList": {
         "type": "object",
