@@ -2954,7 +2954,7 @@
           },
           "company_crm_id": {
             "type": "string",
-            "description": "With `workflow_id`: the company's CRM record, as `HUBSPOT:<company id>` or `SALESFORCE:<account id>`. The contacts are associated to that record.",
+            "description": "With `workflow_id`: the company's CRM record, as `HUBSPOT:<company id>` or `SALESFORCE:<account id>`. The contacts are associated to that record. A HubSpot record must come with its `company_domain` or `company_linkedin_url`, which the run does not read from HubSpot.",
             "example": "HUBSPOT:18342957301"
           },
           "disable_company_info": {
