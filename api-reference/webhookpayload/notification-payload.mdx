@@ -1,0 +1,120 @@
+---
+title: "Notification Payload"
+description: "The JSON event a webhook notification posts after LoneScale syncs a contact to your CRM"
+---
+
+A **notification** is a rule attached to a workflow. Its destination is a Slack channel or a webhook. A webhook notification posts **one JSON event per contact**, right after the HubSpot or Salesforce push, so you can trigger your own flow (lead scoring, round-robin assignment, sequence enrollment) as soon as LoneScale creates or updates a record.
+
+Create one from the workflow form (**Output & Integration → Notifications → New notification**) or from **Settings → Notifications**.
+
+## Triggers
+
+A notification fires on two families of triggers. Any selected trigger within a family is enough; when both families are selected, one of each must hold; a family left empty means "any".
+
+| Trigger                | Fires when                                                                 |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `crm.contact.created`  | LoneScale created the contact                                              |
+| `crm.contact.updated`  | LoneScale sent an update to an existing contact                            |
+| `crm.contact.moved`    | The imported contact was re-associated to its new company (job change)     |
+| `crm.lead.created`     | LoneScale created a Salesforce lead instead of a contact                   |
+| `crm.account.created`  | LoneScale created the company / account                                    |
+| `crm.account.updated`  | LoneScale sent an update to an existing company / account                  |
+| `crm.sync.failed`      | The CRM refused the write (validation error, rate limit retries exhausted) |
+| `signal.job_change`    | The contact joined a new company                                           |
+| `signal.promotion`     | The contact has a new title in the same company                            |
+
+"Updated" means LoneScale sent a write to the record. A company found while the account update mapping is empty is associated but not written: its action is `unchanged` and no event fires.
+
+## Delivery
+
+- `POST` to the webhook URL, `Content-Type: application/json`, one event per contact and per notification.
+- A `5xx` answer is retried once after 5 seconds.
+- Every delivery is listed in **Logs** with the request and the response.
+- Deduplicate on `event_id`: a CRM rate-limit retry can deliver the same event twice.
+
+## Payload
+
+```json
+{
+  "event_id": "run_8f3c#item_2b71#ntf_41",
+  "version": 1,
+  "source": "LoneScale",
+  "triggers": ["crm.contact.created", "crm.account.updated", "signal.job_change"],
+  "matched": ["crm.contact.created", "signal.job_change"],
+  "notification": { "id": "ntf_41", "title": "Contact created → scoring" },
+  "workflow": {
+    "id": "wf_c9d4",
+    "title": "Customers – job changes",
+    "type": "CONTACT_TRACKING",
+    "run_id": "run_8f3c"
+  },
+  "crm": { "type": "hubspot", "hub_id": 2451930, "instance_url": null },
+  "contact": {
+    "action": "created",
+    "id": "901274",
+    "object": "contact",
+    "url": "https://app.hubspot.com/contacts/2451930/record/0-1/901274",
+    "message": "Contact successfully created",
+    "error": null
+  },
+  "previous_contact": {
+    "action": "updated",
+    "id": "118201",
+    "object": "contact",
+    "url": "https://app.hubspot.com/contacts/2451930/record/0-1/118201",
+    "message": null,
+    "error": null
+  },
+  "account": {
+    "action": "updated",
+    "id": "55310",
+    "object": "company",
+    "url": "https://app.hubspot.com/contacts/2451930/record/0-2/55310",
+    "message": "Company successfully updated",
+    "error": null
+  },
+  "lead": null,
+  "sync": { "status": "synced", "synced_at": "2026-10-31T09:14:02.000Z", "error": null },
+  "signal": {
+    "type": "job_change",
+    "from": { "company": "OldCo", "title": "Head of Sales" },
+    "to": { "company": "NewCo", "title": "VP Sales" }
+  },
+  "input": {
+    "contact_id": "118201",
+    "email": "m.durand@oldco.com",
+    "linkedin_url": "https://www.linkedin.com/in/mdurand",
+    "company_name": "OldCo",
+    "current_position": "Head of Sales"
+  },
+  "result": {
+    "full_name": "Marie Durand",
+    "job_title": "VP Sales",
+    "company_name": "NewCo",
+    "company_domain": "newco.io",
+    "change_company": true,
+    "change_job_title": false,
+    "matched_personas": "Sales leader",
+    "main_email": "marie.durand@newco.io"
+  }
+}
+```
+
+### Fields
+
+| Field              | Description                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `event_id`         | `run#item#notification`, stable across a retry                                                                       |
+| `triggers`         | Every trigger true for this contact                                                                                  |
+| `matched`          | The selected triggers that held: why this notification fired                                                         |
+| `crm`              | The CRM the workflow syncs to. `null` when the workflow output is a webhook: the event is sent at match time instead |
+| `contact`          | The contact record LoneScale wrote. `action` is `created`, `updated`, `unchanged`, `skipped` or `failed`              |
+| `previous_contact` | On a job change that created a new contact: the record the contact was imported from                                 |
+| `account`          | The company (HubSpot) or account (Salesforce). `object` says which                                                   |
+| `lead`             | Salesforce only, when a lead was created or updated instead of a contact                                             |
+| `sync`             | `status` is `synced`, `failed` or `skipped`; `error` carries the CRM message on a refusal                            |
+| `signal`           | The job change or promotion that was detected, with the previous and current company and title                      |
+| `input`            | The contact as imported: the `client_*` columns of the workflow, without their prefix (custom columns included)      |
+| `result`           | What LoneScale found: the `lonescale_*` columns without their prefix, plus `main_email` / `main_phone` when enriched |
+
+The `url` of a record is a deep link to HubSpot or Salesforce, built from the ids above, so a flow can open or write back to the record immediately.
