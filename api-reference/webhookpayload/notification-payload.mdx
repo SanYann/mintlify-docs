@@ -32,6 +32,17 @@ A notification fires on two families of triggers. Any selected trigger within a 
 - Every delivery is listed in **Logs** with the request and the response.
 - Deduplicate on `event_id`: a CRM rate-limit retry can deliver the same event twice.
 
+## Repush
+
+Pushing runs to the CRM again from the app (select them in the run history, then **Push**) evaluates the webhook notifications again for every contact it pushes, on what this push did:
+
+- `origin` is `repush`, and `event_id` ends with `#repush-<id>`, one id per repush. Deduplicating on `event_id` keeps the repush events.
+- A record the repush finds again never fires `created`: `crm.contact.created` and `crm.account.created` only fire when the repush creates a new record.
+- A push that fails sends `crm.sync.failed`.
+- Contacts the CRM settings keep out of the push send nothing, and Slack notifications are not posted again.
+
+Branch on `origin` to skip what your flow already did for the run, such as a round-robin assignment.
+
 ## Payload
 
 ```json
@@ -39,6 +50,7 @@ A notification fires on two families of triggers. Any selected trigger within a 
   "event_id": "run_8f3c#item_2b71#ntf_41",
   "version": 1,
   "source": "LoneScale",
+  "origin": "run",
   "triggers": ["crm.contact.created", "crm.account.updated", "signal.job_change"],
   "matched": ["crm.contact.created", "signal.job_change"],
   "notification": { "id": "ntf_41", "title": "Contact created → scoring" },
@@ -104,7 +116,8 @@ A notification fires on two families of triggers. Any selected trigger within a 
 
 | Field              | Description                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `event_id`         | `run#item#notification`, stable across a retry                                                                       |
+| `event_id`         | `run#item#notification`, stable across a retry. A repush adds `#repush-<id>`                                         |
+| `origin`           | `run` for the workflow run, `repush` when the run is pushed to the CRM again from the app                            |
 | `triggers`         | Every trigger true for this contact                                                                                  |
 | `matched`          | The selected triggers that held: why this notification fired                                                         |
 | `crm`              | The CRM the workflow syncs to. `null` when the workflow output is a webhook: the event is sent at match time instead |
