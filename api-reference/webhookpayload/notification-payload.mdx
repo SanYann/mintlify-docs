@@ -61,6 +61,14 @@ Pushing runs to the CRM again from the app (select them in the run history, then
 
 Branch on `origin` to skip what your flow already did for the run, such as a round-robin assignment.
 
+## Resend notifications
+
+**Resend notifications** in the run history (select runs, then **Resend notifications**) sends the webhook notifications of those runs again, **without pushing anything to the CRM**. Use it when your endpoint was down during the run, or to feed a flow you set up afterwards:
+
+- Each event is the run's own: same `event_id`, with `origin` set to `replay`. Deduplicating on `event_id` skips what you already processed.
+- The events say what the run did: a contact the run created is still `created`, and `owner_id` is the owner the run read.
+- Every webhook notification the workflow uses fires, including one added after the run. Slack notifications are not posted again.
+
 ## Payload
 
 ```json
@@ -170,8 +178,8 @@ A **New Hires** event has the same shape with `signal.type` `new_hire`, no `prev
 
 | Field              | Description                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `event_id`         | `run#item#notification`, stable across a retry. A repush adds `#repush-<id>`, a test starts with `test#`            |
-| `origin`           | `run` for the workflow run, `repush` when the run is pushed to the CRM again from the app, `test` for **Send test event** |
+| `event_id`         | `run#item#notification`, stable across a retry and a replay. A repush adds `#repush-<id>`, a test starts with `test#` |
+| `origin`           | `run` for the workflow run, `repush` when the run is pushed to the CRM again, `replay` for **Resend notifications**, `test` for **Send test event** |
 | `triggers`         | Every trigger true for this event                                                                                    |
 | `matched`          | The selected triggers that held: why this notification fired                                                         |
 | `crm`              | The CRM the workflow syncs to. `null` when the workflow has no CRM destination: the event is sent when the signal is found |
