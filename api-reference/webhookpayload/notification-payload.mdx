@@ -66,8 +66,9 @@ Branch on `origin` to skip what your flow already did for the run, such as a rou
 **Resend notifications** in the run history (select runs, then **Resend notifications**) sends the webhook notifications of those runs again, **without pushing anything to the CRM**. Use it when your endpoint was down during the run, or to feed a flow you set up afterwards:
 
 - Each event is the run's own: same `event_id`, with `origin` set to `replay`. Deduplicating on `event_id` skips what you already processed.
-- The events say what the run did: a contact the run created is still `created`, and `owner_id` is the owner the run read.
-- Every webhook notification the workflow uses fires, including one added after the run. Slack notifications are not posted again.
+- The events say what the run did: a contact the run created is still `created`, and `sync.synced_at` is when the run pushed it.
+- `owner_id` is the owner the run read. If the run read none (no webhook notification fired for that record), the replay reads it and keeps it for later replays.
+- Every webhook notification the workflow uses fires, with its triggers as they are now, including one added or edited after the run. A record the run did not notify can therefore get an event. Slack notifications are not posted again.
 
 ## Payload
 
@@ -86,7 +87,7 @@ Branch on `origin` to skip what your flow already did for the run, such as a rou
     "type": "CONTACT_TRACKING",
     "run_id": "run_8f3c"
   },
-  "crm": { "type": "hubspot", "hub_id": 2451930, "instance_url": null },
+  "crm": { "type": "hubspot", "hub_id": "2451930", "instance_url": null },
   "contact": {
     "action": "created",
     "id": "901274",
@@ -182,13 +183,13 @@ A **New Hires** event has the same shape with `signal.type` `new_hire`, no `prev
 | `origin`           | `run` for the workflow run, `repush` when the run is pushed to the CRM again, `replay` for **Resend notifications**, `test` for **Send test event** |
 | `triggers`         | Every trigger true for this event                                                                                    |
 | `matched`          | The selected triggers that held: why this notification fired                                                         |
-| `crm`              | The CRM the workflow syncs to. `null` when the workflow has no CRM destination: the event is sent when the signal is found |
+| `crm`              | The CRM the workflow syncs to. `hub_id` is the HubSpot portal id, as a string. `null` when the workflow has no CRM destination: the event is sent when the signal is found |
 | `contact`          | The contact record LoneScale wrote. `action` is `created`, `updated`, `unchanged`, `skipped` or `failed`              |
-| `previous_contact` | On a job change that created a new contact: the record the contact was imported from                                 |
+| `previous_contact` | Only when the job change push created a new contact: the record the contact was imported from, updated with the former-company fields. `null` when LoneScale updated the imported contact itself (moved to its new company, or no company change): `contact` is then that record |
 | `account`          | The company (HubSpot) or account (Salesforce). `object` says which                                                   |
 | `lead`             | Salesforce only, when a lead was created or updated instead of a contact                                             |
-| `owner_id`         | On each record: its CRM owner (HubSpot owner id, Salesforce `OwnerId`) read right after the push, `null` when it has none |
-| `sync`             | `status` is `synced`, `failed` or `skipped`; `scenario` is the job change scenario of the CRM settings (Job Changes only); `error` carries the CRM message on a refusal |
+| `owner_id`         | On each record: its CRM owner (HubSpot owner id, Salesforce `OwnerId`) read right after the push, `null` when it has none. A replay sends the owner the run read |
+| `sync`             | `status` is `synced`, `failed` or `skipped`; `scenario` is the job change scenario of the CRM settings (Job Changes only); `synced_at` is when the record was pushed (on a replay, the run's push); `error` carries the CRM message on a refusal |
 | `signal`           | The signal that was found: a job change or promotion with the previous and current company and title, a new hire, or new job postings |
 | `input`            | The contact as imported: the `client_*` columns of the workflow, without their prefix (custom columns included)      |
 | `result`           | What LoneScale found: the `lonescale_*` columns without their prefix, plus `main_email` / `main_phone` when enriched. Job Postings: the account's fields |
