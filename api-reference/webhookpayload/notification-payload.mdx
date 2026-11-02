@@ -1,15 +1,29 @@
 ---
 title: "Notification Payload"
-description: "The JSON event a webhook notification posts after LoneScale syncs a contact to your CRM"
+description: "The JSON event a webhook notification posts after LoneScale finds a signal or syncs it to your CRM"
 ---
 
-A **notification** is a rule attached to a workflow. Its destination is a Slack channel or a webhook. A webhook notification posts **one JSON event per contact**, right after the HubSpot or Salesforce push, so you can trigger your own flow (lead scoring, round-robin assignment, sequence enrollment) as soon as LoneScale creates or updates a record.
+A **notification** is a rule attached to a workflow. Its destination is a Slack channel or a webhook. A webhook notification posts **one JSON event per contact** (per account for Job Postings), right after the HubSpot or Salesforce push, so you can trigger your own flow (lead scoring, round-robin assignment, sequence enrollment) as soon as LoneScale creates or updates a record.
 
-Create one from the workflow form (**Output & Integration → Notifications → New notification**) or from **Settings → Notifications**.
+Create one from the workflow form (**Output & Integration → Notifications → New notification**) or from **Settings → Notifications**. Job Changes, New Hires and Job Postings workflows all accept webhook notifications.
+
+<Tip>
+**Send test event** in the notification editor posts a sample event to your webhook before any run, so Zapier, Make or n8n can map its fields. A test event has `origin: "test"`: skip it in your flow.
+</Tip>
+
+## When an event is sent
+
+| Workflow     | One event per          | Sent                                                                                               | Signal               |
+| ------------ | ---------------------- | -------------------------------------------------------------------------------------------------- | -------------------- |
+| Job Changes  | contact                | Right after the contact's CRM push; when the workflow has no CRM destination, when the change is found | `signal.job_change`, `signal.promotion` |
+| New Hires    | new hire               | Right after the new hire's CRM push; when the workflow has no CRM destination, when it is found     | `signal.new_hire`    |
+| Job Postings | account and run        | Once the run is synced, after the account's CRM push, with every job posting the account matched    | `signal.job_posting` |
+
+Each event counts as one task in Zapier or Make.
 
 ## Triggers
 
-A notification fires on two families of triggers. Any selected trigger within a family is enough; when both families are selected, one of each must hold; a family left empty means "any".
+A notification fires on two families of triggers. Any selected trigger within a family is enough; when both families are selected, one of each must hold; a family left empty means "any". New Hires and Job Postings notifications select CRM events only: their signal is on every event.
 
 | Trigger                | Fires when                                                                 |
 | ---------------------- | -------------------------------------------------------------------------- |
@@ -22,19 +36,23 @@ A notification fires on two families of triggers. Any selected trigger within a 
 | `crm.sync.failed`      | The CRM refused the write (validation error, rate limit retries exhausted) |
 | `signal.job_change`    | The contact joined a new company                                           |
 | `signal.promotion`     | The contact has a new title in the same company                            |
+| `signal.new_hire`      | A new hire was found (New Hires)                                           |
+| `signal.job_posting`   | The account has new job postings (Job Postings)                            |
 
-"Updated" means LoneScale sent a write to the record. A company found while the account update mapping is empty is associated but not written: its action is `unchanged` and no event fires.
+"Updated" means LoneScale sent a write to the record. A company found while the account update mapping is empty is associated but not written: its action is `unchanged` and no event fires. Job Postings push accounts only: their events have no contact.
 
 ## Delivery
 
-- `POST` to the webhook URL, `Content-Type: application/json`, one event per contact and per notification.
-- A `5xx` answer is retried once after 5 seconds.
-- Every delivery is listed in **Logs** with the request and the response.
-- Deduplicate on `event_id`: a CRM rate-limit retry can deliver the same event twice.
+- `POST` to the webhook URL, `Content-Type: application/json`, with the headers set on the webhook connection.
+- No answer (timeout, connection reset, DNS), `408`, `425`, `429` and any `5xx` are retried: four attempts in all, 5 s, 30 s and 90 s apart. A `Retry-After` header is honoured up to 2 minutes. Any other `4xx` is not retried.
+- An endpoint that stays down for three events in a row gets one attempt per event for the rest of the run.
+- Every delivery is listed in **Logs** (Integrations, type `WEBHOOK`) with the request, the answer and the number of attempts. A delivery that got no answer shows as an error with status `599`.
+- When the last delivery fails, the webhook shows **Webhook error** in **Integrations → Webhook** and on the notifications that use it, until a delivery or a test succeeds.
+- Deduplicate on `event_id`: a retry after a timeout or a CRM rate-limit retry can deliver the same event twice.
 
 ## Repush
 
-Pushing runs to the CRM again from the app (select them in the run history, then **Push**) evaluates the webhook notifications again for every contact it pushes, on what this push did:
+Pushing runs to the CRM again from the app (select them in the run history, then **Push**) evaluates the webhook notifications again for every contact or account it pushes, on what this push did:
 
 - `origin` is `repush`, and `event_id` ends with `#repush-<id>`, one id per repush. Deduplicating on `event_id` keeps the repush events.
 - A record the repush finds again never fires `created`: `crm.contact.created` and `crm.account.created` only fire when the repush creates a new record.
@@ -66,6 +84,7 @@ Branch on `origin` to skip what your flow already did for the run, such as a rou
     "id": "901274",
     "object": "contact",
     "url": "https://app.hubspot.com/contacts/2451930/record/0-1/901274",
+    "owner_id": "81234567",
     "message": "Contact successfully created",
     "error": null
   },
@@ -74,6 +93,7 @@ Branch on `origin` to skip what your flow already did for the run, such as a rou
     "id": "118201",
     "object": "contact",
     "url": "https://app.hubspot.com/contacts/2451930/record/0-1/118201",
+    "owner_id": "81234567",
     "message": null,
     "error": null
   },
@@ -82,11 +102,17 @@ Branch on `origin` to skip what your flow already did for the run, such as a rou
     "id": "55310",
     "object": "company",
     "url": "https://app.hubspot.com/contacts/2451930/record/0-2/55310",
+    "owner_id": null,
     "message": "Company successfully updated",
     "error": null
   },
   "lead": null,
-  "sync": { "status": "synced", "synced_at": "2026-10-31T09:14:02.000Z", "error": null },
+  "sync": {
+    "status": "synced",
+    "scenario": "update_all",
+    "synced_at": "2026-10-31T09:14:02.000Z",
+    "error": null
+  },
   "signal": {
     "type": "job_change",
     "from": { "company": "OldCo", "title": "Head of Sales" },
@@ -112,22 +138,52 @@ Branch on `origin` to skip what your flow already did for the run, such as a rou
 }
 ```
 
+A **New Hires** event has the same shape with `signal.type` `new_hire`, no `previous_contact` and an empty `input`. A **Job Postings** event has no `contact`, `previous_contact` nor `lead`, the account's fields in `result` and its job postings in `jobs`:
+
+```json
+{
+  "event_id": "run_51aa#company_93f0#ntf_52",
+  "origin": "run",
+  "triggers": ["crm.account.created", "signal.job_posting"],
+  "matched": ["crm.account.created"],
+  "workflow": { "id": "wf_a1b2", "title": "Hiring SDRs", "type": "REVEAL", "run_id": "run_51aa" },
+  "contact": null,
+  "account": {
+    "action": "created",
+    "id": "55310",
+    "object": "company",
+    "url": "https://app.hubspot.com/contacts/2451930/record/0-2/55310",
+    "owner_id": "81234567",
+    "message": "Company created",
+    "error": null
+  },
+  "signal": { "type": "job_posting", "from": { "company": null, "title": null }, "to": { "company": "NewCo", "title": null } },
+  "result": { "company_name": "NewCo", "company_domain": "newco.io", "matched_job_offers_company_count": 2 },
+  "jobs": [
+    { "job_id": "job_7f21", "job_name": "Senior Account Executive", "job_link": "https://careers.newco.io/jobs/7f21" },
+    { "job_id": "job_7f22", "job_name": "Sales Development Representative", "job_link": "https://careers.newco.io/jobs/7f22" }
+  ]
+}
+```
+
 ### Fields
 
 | Field              | Description                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `event_id`         | `run#item#notification`, stable across a retry. A repush adds `#repush-<id>`                                         |
-| `origin`           | `run` for the workflow run, `repush` when the run is pushed to the CRM again from the app                            |
-| `triggers`         | Every trigger true for this contact                                                                                  |
+| `event_id`         | `run#item#notification`, stable across a retry. A repush adds `#repush-<id>`, a test starts with `test#`            |
+| `origin`           | `run` for the workflow run, `repush` when the run is pushed to the CRM again from the app, `test` for **Send test event** |
+| `triggers`         | Every trigger true for this event                                                                                    |
 | `matched`          | The selected triggers that held: why this notification fired                                                         |
-| `crm`              | The CRM the workflow syncs to. `null` when the workflow output is a webhook: the event is sent at match time instead |
+| `crm`              | The CRM the workflow syncs to. `null` when the workflow has no CRM destination: the event is sent when the signal is found |
 | `contact`          | The contact record LoneScale wrote. `action` is `created`, `updated`, `unchanged`, `skipped` or `failed`              |
 | `previous_contact` | On a job change that created a new contact: the record the contact was imported from                                 |
 | `account`          | The company (HubSpot) or account (Salesforce). `object` says which                                                   |
 | `lead`             | Salesforce only, when a lead was created or updated instead of a contact                                             |
-| `sync`             | `status` is `synced`, `failed` or `skipped`; `error` carries the CRM message on a refusal                            |
-| `signal`           | The job change or promotion that was detected, with the previous and current company and title                      |
+| `owner_id`         | On each record: its CRM owner (HubSpot owner id, Salesforce `OwnerId`) read right after the push, `null` when it has none |
+| `sync`             | `status` is `synced`, `failed` or `skipped`; `scenario` is the job change scenario of the CRM settings (Job Changes only); `error` carries the CRM message on a refusal |
+| `signal`           | The signal that was found: a job change or promotion with the previous and current company and title, a new hire, or new job postings |
 | `input`            | The contact as imported: the `client_*` columns of the workflow, without their prefix (custom columns included)      |
-| `result`           | What LoneScale found: the `lonescale_*` columns without their prefix, plus `main_email` / `main_phone` when enriched |
+| `result`           | What LoneScale found: the `lonescale_*` columns without their prefix, plus `main_email` / `main_phone` when enriched. Job Postings: the account's fields |
+| `jobs`             | Job Postings only: the job postings the account matched in the run                                                   |
 
 The `url` of a record is a deep link to HubSpot or Salesforce, built from the ids above, so a flow can open or write back to the record immediately.
