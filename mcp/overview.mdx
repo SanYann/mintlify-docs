@@ -32,9 +32,12 @@ The tools below are available once the user has authorized with their LoneScale 
 | `assign-account` | sync | Make a rep the CRM owner of a listed account, and of its contact (on by default). Writes to the CRM. |
 | `dismiss-account` | sync | Hide a listed account for the whole team until a new signal arrives. |
 | `enrich-account-contact` | sync | Find the missing email and phone of a listed account's contact, right away. Consumes credits only when something is found; written to the CRM contact when there is one. |
+| `public-api-brief` | sync | The outreach brief of one person: why write to them now, an email draft and a LinkedIn message, from the CRM history and their profile, following your organisation's skills and email templates. Best from a CRM contact id; a person the CRM does not know still gets a brief. `custom_details` carries anything that should shape the message. Waits up to 45 seconds, then returns a `run_id`. Requires the AI assistant to be enabled. |
+| `public-api-brief-bulk` | async | The outreach briefs of up to 100 contacts, or of a HubSpot list, in one run. Returns a `run_id`. When an admin picked the CRM fields for it, each email is saved on its CRM record. |
+| `public-api-brief-status` | sync | Read a brief run by its `run_id`: counts, and each finished contact's drafts. |
 | `get-job-result` | sync | Poll for results of an async job using its `lonescale_job_id`. Returns `pending` until status is `ready`. Sourced contacts come back with a `crm` block (existing record + owner, or not in CRM). |
 
-Sync tools return results inline. Async tools return a job id immediately and the assistant must call `get-job-result` every few seconds until the status is `ready`.
+Sync tools return results inline. Async tools return a job id immediately and the assistant must call `get-job-result` every few seconds until the status is `ready`. The brief tools have their own status tool: a brief run is read with `public-api-brief-status`.
 
 ## What you'll need
 
