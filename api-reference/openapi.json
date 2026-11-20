@@ -2234,10 +2234,954 @@
           }
         }
       }
+    },
+    "/brief": {
+      "post": {
+        "description": "Writes the outreach brief of **one person**: why write to them now (the hook), an email draft and a LinkedIn message, grounded in your CRM history (the person, their account, past exchanges, deals, tickets) and their profile. The drafts follow the skills and the email templates your organisation set in LoneScale.\n\nThe CRM record id is the best input. Without it the person is looked up by email, then by LinkedIn URL; a person your CRM does not know still gets a brief.\n\nA brief takes 30 to 90 seconds. The request waits up to 45 seconds: it answers `200` with the brief when it is written in time, else `202` with `status: \"running\"` and the run `id` to read on `GET /brief/runs/{id}`.\n\nWhen an admin picked the fields for it (Chrome extension settings), the email draft is also written to the CRM record: see `crm_save`.\n\nRequires the AI assistant to be enabled for the API key's holder. No credits are charged. Rate limited to **10 requests per minute**.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BriefContact"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "crm": {
+                        "type": "string",
+                        "enum": [
+                          "hubspot",
+                          "salesforce"
+                        ],
+                        "description": "The CRM to read. Default: the one picked in the Chrome extension settings, else the connected one. With no CRM connected, the brief is written from the data you send."
+                      },
+                      "refresh": {
+                        "type": "boolean",
+                        "description": "Write a new brief instead of the one LoneScale keeps for a few hours for the same contact."
+                      }
+                    }
+                  }
+                ]
+              },
+              "example": {
+                "crm_contact_id": "710432049398",
+                "custom_details": "Met at Money20/20. Asked about multi-entity consolidation.",
+                "language": "en"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The brief, or its failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefAnswer"
+                },
+                "example": {
+                  "id": "3f0b1f0e-8a3c-4f0e-9a51-2b7b3c1d9e10",
+                  "status": "done",
+                  "brief": {
+                    "hook": {
+                      "line": "She moved to CFO in March and your team spoke with her predecessor in 2025.",
+                      "linkedin_fact": "CFO at Acme since March 2026",
+                      "crm_fact": "Call with Paul Martin on 2025-11-12 about consolidation"
+                    },
+                    "outreach_messages": {
+                      "email": {
+                        "subject": "consolidation at acme",
+                        "body": "Hi Jane,\n\nCongrats on the CFO role. My colleague Alice spoke with Paul Martin last November about multi-entity consolidation.\n\nIs it still done by hand each month?\n\nYann"
+                      },
+                      "linkedin": "Jane,\n\nCongrats on the CFO role at Acme.\n\nIs multi-entity consolidation still manual on your side?"
+                    },
+                    "red_flags": [],
+                    "crm_matched": true,
+                    "contact_found_in_crm": true,
+                    "crm_save": {
+                      "status": "saved",
+                      "fields": [
+                        "ls_brief_subject",
+                        "ls_brief_body"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Not written within 45 seconds: read the run",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefAnswer"
+                },
+                "example": {
+                  "id": "3f0b1f0e-8a3c-4f0e-9a51-2b7b3c1d9e10",
+                  "status": "running"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Nobody is named, or the CRM asked for is not connected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "A contact needs one of crm_contact_id, email, linkedin_url, full_name, company_domain or company_name",
+                  "error": "Bad Request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The AI assistant is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "AI assistant is not enabled for this member",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/brief/bulk": {
+      "post": {
+        "description": "Writes the outreach brief of **many people** in one run: up to 100 `contacts`, or the contacts of a HubSpot list (segment) given as `hubspot_list_id`, 100 at a time (pass the returned `next_after` as `after` to run the next page).\n\nAnswers at once with the run `id`. The briefs are written in the background, a few at a time, about a minute each. Read the run on `GET /brief/runs/{id}`.\n\n`language`, `focus` and `custom_details` apply to every contact that does not set its own.\n\nWhen an admin picked the fields for it (Chrome extension settings), each email draft is written to its CRM record, where a CRM workflow or a sequence can start from it.\n\nRequires the AI assistant to be enabled for the API key's holder. No credits are charged. Rate limited to **5 requests per minute**.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contacts": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "description": "The people to brief. Required unless `hubspot_list_id` is given.",
+                    "items": {
+                      "$ref": "#/components/schemas/BriefContact"
+                    }
+                  },
+                  "hubspot_list_id": {
+                    "type": "string",
+                    "description": "A HubSpot list (segment) id: its contacts are briefed.",
+                    "example": "7793"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "HubSpot list only: how many contacts of the list. Default 100."
+                  },
+                  "after": {
+                    "type": "string",
+                    "description": "HubSpot list only: the `next_after` a previous call returned."
+                  },
+                  "crm": {
+                    "type": "string",
+                    "enum": [
+                      "hubspot",
+                      "salesforce"
+                    ],
+                    "description": "The CRM to read. Default: the one picked in the Chrome extension settings, else the connected one. With no CRM connected, the brief is written from the data you send."
+                  },
+                  "language": {
+                    "type": "string",
+                    "enum": [
+                      "fr",
+                      "en"
+                    ],
+                    "description": "Language of the drafts. Default: the language of the account's country, else English."
+                  },
+                  "focus": {
+                    "type": "string",
+                    "maxLength": 300,
+                    "description": "What the message should hook on, in a few words."
+                  },
+                  "custom_details": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "description": "Anything your team knows about this prospect or this outreach: notes, an angle, an offer, facts from another tool. Used for the messaging.",
+                    "example": "Met at Money20/20. Asked about multi-entity consolidation."
+                  }
+                }
+              },
+              "examples": {
+                "contacts": {
+                  "summary": "A list of contacts",
+                  "value": {
+                    "contacts": [
+                      {
+                        "crm_contact_id": "710432049398"
+                      },
+                      {
+                        "linkedin_url": "https://www.linkedin.com/in/john-roe",
+                        "company_name": "Globex"
+                      }
+                    ],
+                    "custom_details": "Q4 campaign on month-end close."
+                  }
+                },
+                "hubspot_list": {
+                  "summary": "A HubSpot list",
+                  "value": {
+                    "hubspot_list_id": "7793",
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The run was queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefRunStarted"
+                },
+                "example": {
+                  "id": "9d2f6a54-1c1e-4f6b-8f0e-5a7c2b9e4d11",
+                  "status": "running",
+                  "total": 2,
+                  "crm": "hubspot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No contact, more than 100, a contact that names nobody, or a HubSpot list that cannot be read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "At most 100 contacts per request",
+                  "error": "Bad Request",
+                  "statusCode": 400
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The AI assistant is not enabled for the API key's holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "AI assistant is not enabled for this member",
+                  "error": "Forbidden",
+                  "statusCode": 403
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The HubSpot list does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "HubSpot list not found",
+                  "error": "Not Found",
+                  "statusCode": 404
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/brief/runs/{id}": {
+      "get": {
+        "description": "Reads a run started with `POST /brief` or `POST /brief/bulk`: how many briefs are written, failed and pending, and each finished contact's hook, drafts, red flags and CRM save. `status` is `running` while a contact is pending.\n\nA run is read by the API key that started it, and kept **7 days**.\n\nRate limited to **60 requests per minute**.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The run id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run as it stands",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefRun"
+                },
+                "example": {
+                  "id": "9d2f6a54-1c1e-4f6b-8f0e-5a7c2b9e4d11",
+                  "status": "running",
+                  "total": 2,
+                  "done": 1,
+                  "failed": 0,
+                  "pending": 1,
+                  "crm": "hubspot",
+                  "created_at": "2026-11-20T15:02:30.000Z",
+                  "results": [
+                    {
+                      "index": 0,
+                      "status": "done",
+                      "input": {
+                        "crm_contact_id": "710432049398"
+                      },
+                      "result": {
+                        "hook": {
+                          "line": "She moved to CFO in March.",
+                          "linkedin_fact": "CFO at Acme since March 2026",
+                          "crm_fact": null
+                        },
+                        "outreach_messages": {
+                          "email": {
+                            "subject": "consolidation at acme",
+                            "body": "Hi Jane,\n\nCongrats on the CFO role.\n\nYann"
+                          },
+                          "linkedin": "Jane,\n\nCongrats on the CFO role at Acme."
+                        },
+                        "red_flags": [],
+                        "talking_points": [
+                          "Matches your CFO persona"
+                        ],
+                        "crm_matched": true,
+                        "contact_found_in_crm": true,
+                        "crm_save": {
+                          "status": "saved",
+                          "fields": [
+                            "ls_brief_subject",
+                            "ls_brief_body"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "index": 1,
+                      "status": "pending",
+                      "input": {
+                        "linkedin_url": "https://www.linkedin.com/in/john-roe"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                "example": {
+                  "message": "Invalid API Key",
+                  "error": "Unauthorized",
+                  "statusCode": 401
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown run, expired, or started with another API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Brief run not found",
+                  "error": "Not Found",
+                  "statusCode": 404
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "BriefContact": {
+        "type": "object",
+        "description": "Who the brief is about. Give at least one of `crm_contact_id`, `email`, `linkedin_url`, `full_name`, `company_domain` or `company_name`. A person your CRM does not know still gets a brief, written from the fields given here and the profile LoneScale holds.",
+        "properties": {
+          "crm_contact_id": {
+            "type": "string",
+            "description": "The CRM record of the person: a HubSpot contact id, or a Salesforce Contact or Lead id. **The best input**: the brief reads the record, its account and their history.",
+            "example": "710432049398"
+          },
+          "email": {
+            "type": "string",
+            "description": "The person's email. Used to find them in the CRM when no `crm_contact_id` is given.",
+            "example": "jane.doe@acme.com"
+          },
+          "linkedin_url": {
+            "type": "string",
+            "description": "The person's LinkedIn profile URL. Used to find them in the CRM, and to read the profile LoneScale holds for them.",
+            "example": "https://www.linkedin.com/in/jane-doe"
+          },
+          "full_name": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "job_title": {
+            "type": "string",
+            "example": "Chief Financial Officer"
+          },
+          "company_name": {
+            "type": "string",
+            "example": "Acme"
+          },
+          "company_domain": {
+            "type": "string",
+            "example": "acme.com"
+          },
+          "company_linkedin_url": {
+            "type": "string"
+          },
+          "crm_company_id": {
+            "type": "string",
+            "description": "The CRM account, when you already know it: read by id instead of searched by domain or name."
+          },
+          "country": {
+            "type": "string",
+            "description": "The account's country (name or ISO code). Picks the drafts' language when `language` is not set."
+          },
+          "profile": {
+            "type": "object",
+            "description": "The person's profile, field by field. Every key is optional; unknown keys are ignored.",
+            "properties": {
+              "headline": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "about": {
+                "type": "string"
+              },
+              "positions": {
+                "type": "array",
+                "description": "Current first.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "company": {
+                      "type": "string"
+                    },
+                    "dates": {
+                      "type": "string",
+                      "example": "2023-03 - present"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "education": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "school": {
+                      "type": "string"
+                    },
+                    "degree": {
+                      "type": "string"
+                    },
+                    "dates": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "certifications": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "recent_posts": {
+                "type": "array",
+                "description": "What the person posted lately, newest first.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "date": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "company": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "linkedin_url": {
+                    "type": "string"
+                  },
+                  "industry": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "profile_text": {
+            "type": "string",
+            "maxLength": 20000,
+            "description": "The profile as plain text, when you do not have it field by field."
+          },
+          "past_experiences": {
+            "type": "array",
+            "maxItems": 10,
+            "description": "Previous positions, most recent first. Each one is checked in the CRM (a past employer that is a customer is a strong opener). When omitted, LoneScale uses the profile it holds for `linkedin_url`.",
+            "items": {
+              "type": "object",
+              "required": [
+                "company_name"
+              ],
+              "properties": {
+                "company_name": {
+                  "type": "string"
+                },
+                "company_linkedin_url": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "string",
+                  "description": "`YYYY` or `YYYY-MM`."
+                },
+                "end": {
+                  "type": "string",
+                  "description": "`YYYY` or `YYYY-MM`."
+                }
+              }
+            }
+          },
+          "custom_details": {
+            "type": "string",
+            "maxLength": 4000,
+            "description": "Anything your team knows about this prospect or this outreach: notes, an angle, an offer, facts from another tool. Used for the messaging.",
+            "example": "Met at Money20/20. Asked about multi-entity consolidation."
+          },
+          "focus": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "What the message should hook on, in a few words."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "fr",
+              "en"
+            ],
+            "description": "Language of the drafts. Default: the language of the account's country, else English."
+          }
+        }
+      },
+      "BriefDraftEmail": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text; paragraphs are separated by line breaks."
+          },
+          "template": {
+            "type": "string",
+            "description": "The email template the draft follows, when your organisation keeps several."
+          }
+        }
+      },
+      "BriefCrmSave": {
+        "type": "object",
+        "description": "What happened to the email draft on the CRM record. Present only when an admin picked the fields to write to, in the Chrome extension settings.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "saved",
+              "failed",
+              "skipped"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "`saved`: the CRM fields written."
+          },
+          "reason": {
+            "type": "string",
+            "description": "`failed`: the CRM's reason. `skipped`: `not_in_crm` (the person has no record) or `no_email_draft`."
+          }
+        }
+      },
+      "Brief": {
+        "type": "object",
+        "description": "The outreach brief of one person.",
+        "properties": {
+          "hook": {
+            "type": "object",
+            "nullable": true,
+            "description": "Why write to this person now.",
+            "properties": {
+              "line": {
+                "type": "string"
+              },
+              "linkedin_fact": {
+                "type": "string",
+                "nullable": true
+              },
+              "crm_fact": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "outreach_messages": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BriefDraftEmail"
+                  }
+                ],
+                "nullable": true
+              },
+              "linkedin": {
+                "type": "string",
+                "nullable": true,
+                "description": "Plain text; paragraphs are separated by line breaks."
+              }
+            }
+          },
+          "account_context": {
+            "type": "string",
+            "nullable": true
+          },
+          "relationship_history": {
+            "type": "string",
+            "nullable": true
+          },
+          "target_person": {
+            "type": "string",
+            "nullable": true
+          },
+          "pain_points": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "talking_points": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "questions_to_ask": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "red_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What changes how to approach: an open deal held by a colleague, a lost deal, an open support ticket."
+          },
+          "crm_matched": {
+            "type": "boolean",
+            "description": "The account was found in the CRM."
+          },
+          "contact_found_in_crm": {
+            "type": "boolean",
+            "description": "The person was found in the CRM."
+          },
+          "crm_save": {
+            "$ref": "#/components/schemas/BriefCrmSave"
+          },
+          "crm_context": {
+            "type": "object",
+            "description": "The deals, tickets and recent activities of the account, as structured data."
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "company_name": {
+                "type": "string",
+                "nullable": true
+              },
+              "activity_count": {
+                "type": "integer"
+              },
+              "last_touch": {
+                "type": "string",
+                "nullable": true
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "BriefAnswer": {
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The run id, to read on `GET /brief/runs/{id}`."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "done",
+              "running",
+              "failed"
+            ]
+          },
+          "brief": {
+            "$ref": "#/components/schemas/Brief"
+          },
+          "error": {
+            "type": "string",
+            "description": "`failed`: the reason."
+          }
+        }
+      },
+      "BriefRunStarted": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "done"
+            ]
+          },
+          "total": {
+            "type": "integer",
+            "description": "The number of contacts queued."
+          },
+          "crm": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "hubspot",
+              "salesforce",
+              null
+            ]
+          },
+          "next_after": {
+            "type": "string",
+            "nullable": true,
+            "description": "HubSpot list only: the cursor of the next page, `null` at the end of the list."
+          }
+        }
+      },
+      "BriefRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "done"
+            ],
+            "description": "`running` while a contact is pending."
+          },
+          "total": {
+            "type": "integer"
+          },
+          "done": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "pending": {
+            "type": "integer"
+          },
+          "crm": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "results": {
+            "type": "array",
+            "description": "One entry per contact, in the order of the request.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "done",
+                    "failed"
+                  ]
+                },
+                "input": {
+                  "type": "object",
+                  "description": "How the request named the person.",
+                  "properties": {
+                    "crm_contact_id": {
+                      "type": "string"
+                    },
+                    "linkedin_url": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "full_name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "error": {
+                  "type": "string",
+                  "description": "`failed`: the reason."
+                },
+                "result": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Brief"
+                    }
+                  ],
+                  "description": "`done`: the hook, the two drafts, the talking points, the red flags and `crm_save`. A run started with `POST /brief` carries the whole brief."
+                }
+              }
+            }
+          }
+        }
+      },
       "EnrichmentHistory": {
         "type": "object",
         "properties": {

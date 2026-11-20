@@ -78,6 +78,14 @@
             ]
           },
           {
+            "group": "Outreach brief",
+            "pages": [
+              "api-reference/endpoint/brief",
+              "api-reference/endpoint/brief-bulk",
+              "api-reference/endpoint/brief-run"
+            ]
+          },
+          {
             "group": "Today's accounts",
             "pages": [
               "api-reference/endpoint/todays-accounts-list",
