@@ -2237,7 +2237,7 @@
     },
     "/brief": {
       "post": {
-        "description": "Writes the outreach brief of **one person**: why write to them now (the hook), an email draft and a LinkedIn message, grounded in your CRM history (the person, their account, past exchanges, deals, tickets) and their profile. The drafts follow the skills and the email templates your organisation set in LoneScale.\n\nThe CRM record id is the best input. Without it the person is looked up by email, then by LinkedIn URL; a person your CRM does not know still gets a brief.\n\nA brief takes 30 to 90 seconds. The request waits up to 45 seconds: it answers `200` with the brief when it is written in time, else `202` with `status: \"running\"` and the run `id` to read on `GET /brief/runs/{id}`.\n\nWhen an admin picked the fields for it (Chrome extension settings), the email draft is also written to the CRM record: see `crm_save`.\n\nRequires the AI assistant to be enabled for the API key's holder. No credits are charged. Rate limited to **10 requests per minute**.",
+        "description": "Writes the outreach brief of **one person**: why write to them now (the hook), an email draft and a LinkedIn message, grounded in your CRM history (the person, their account, past exchanges, deals, tickets) and their profile. The drafts follow the skills and the email templates your organisation set in LoneScale.\n\nThe CRM record id is the best input. Without it the person is looked up by email, then by LinkedIn URL; a person your CRM does not know still gets a brief when you give their current job title or company, or LoneScale holds their profile. Otherwise the brief comes back `failed` with what to add, and an unknown `crm_contact_id` comes back `failed` too.\n\nA brief takes 30 to 90 seconds. The request waits up to 45 seconds: it answers `200` with the brief when it is written in time, else `202` with `status: \"running\"` and the run `id` to read on `GET /brief/runs/{id}`.\n\nWhen an admin picked the fields for it (Chrome extension settings), the email draft is also written to the CRM record: see `crm_save`.\n\nRequires the AI assistant to be enabled for the API key's holder. No credits are charged. Rate limited to **10 requests per minute**.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2662,11 +2662,11 @@
     "schemas": {
       "BriefContact": {
         "type": "object",
-        "description": "Who the brief is about. Give at least one of `crm_contact_id`, `email`, `linkedin_url`, `full_name`, `company_domain` or `company_name`. A person your CRM does not know still gets a brief, written from the fields given here and the profile LoneScale holds.",
+        "description": "Who the brief is about. The CRM record id is the best input. Otherwise give the person's name with their current job title or company, and their LinkedIn URL or email when known: a person your CRM does not know still gets a brief, written from the fields given here and the profile LoneScale holds. A LinkedIn URL alone is enough only when LoneScale holds that profile. A brief with nothing to stand on (no CRM record, no profile, no role, no company, no `custom_details`) is refused with what to add.",
         "properties": {
           "crm_contact_id": {
             "type": "string",
-            "description": "The CRM record of the person: a HubSpot contact id, or a Salesforce Contact or Lead id. **The best input**: the brief reads the record, its account and their history.",
+            "description": "The CRM record of the person: a HubSpot contact id, or a Salesforce Contact or Lead id. **The best input**: the brief reads the record, its account and their history, and the LinkedIn profile LoneScale holds for the URL on the record. An id the CRM does not know is refused.",
             "example": "710432049398"
           },
           "email": {
@@ -2685,6 +2685,7 @@
           },
           "job_title": {
             "type": "string",
+            "description": "Their current job title, as their LinkedIn profile shows it. With `crm_contact_id`, leave it out: the record is read, and a CRM title is often old.",
             "example": "Chief Financial Officer"
           },
           "company_name": {
